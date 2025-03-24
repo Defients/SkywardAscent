@@ -10,11 +10,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Tooltip } from "react-tooltip";
 import "./styles/SetupPhase.css";
 
-// Replace your import statements with these constant declarations
-const bladedancerImg = `${process.env.PUBLIC_URL}/assets/images/heroes/portraits/bladedancer.png`;
-const manipulatorImg = `${process.env.PUBLIC_URL}/assets/images/heroes/portraits/manipulator.png`;
-const trackerImg = `${process.env.PUBLIC_URL}/assets/images/heroes/portraits/tracker.png`;
-const guardianImg = `${process.env.PUBLIC_URL}/assets/images/heroes/portraits/guardian.png`;
+// Absolute paths to images
+const bladedancerImg = "/assets/images/heroes/portraits/bladedancer.png";
+const manipulatorImg = "/assets/images/heroes/portraits/manipulator.png";
+const trackerImg = "/assets/images/heroes/portraits/tracker.png";
+const guardianImg = "/assets/images/heroes/portraits/guardian.png";
 
 // Mapping of hero ranks to their respective images
 const heroImages = {
@@ -111,6 +111,40 @@ const SetupPhase = ({ onComplete, playSound }) => {
     }
   };
 
+  // Toggle class selection with improved feedback
+  const toggleClassSelection = (rank) => {
+    if (playSound) playSound();
+    const numericRank = parseInt(rank);
+
+    if (selectedClasses.includes(numericRank)) {
+      setSelectedClasses(selectedClasses.filter((r) => r !== numericRank));
+    } else {
+      if (selectedClasses.length < 3) {
+        setSelectedClasses([...selectedClasses, numericRank]);
+      } else {
+        // Provide visual feedback that 3 is the maximum
+        const element = document.querySelector(
+          `.hero-card[data-rank="${rank}"]`
+        );
+        if (element) {
+          element.classList.add("shake-animation");
+          setTimeout(() => {
+            element.classList.remove("shake-animation");
+          }, 500);
+        }
+      }
+    }
+  };
+
+  // Show ability details with improved accessibility
+  const toggleAbilityDetails = (rank) => {
+    if (showAbilityDetails === rank) {
+      setShowAbilityDetails(null);
+    } else {
+      setShowAbilityDetails(rank);
+    }
+  };
+
   // Handle quick play setup with enhanced animation
   const handleQuickPlay = () => {
     if (playSound) playSound();
@@ -172,40 +206,6 @@ const SetupPhase = ({ onComplete, playSound }) => {
     setTimeout(() => {
       setCurrentAnimation(null);
     }, 1500);
-  };
-
-  // Toggle class selection with improved feedback
-  const toggleClassSelection = (rank) => {
-    if (playSound) playSound();
-    const numericRank = parseInt(rank);
-
-    if (selectedClasses.includes(numericRank)) {
-      setSelectedClasses(selectedClasses.filter((r) => r !== numericRank));
-    } else {
-      if (selectedClasses.length < 3) {
-        setSelectedClasses([...selectedClasses, numericRank]);
-      } else {
-        // Provide visual feedback that 3 is the maximum
-        const element = document.querySelector(
-          `.hero-card[data-rank="${rank}"]`
-        );
-        if (element) {
-          element.classList.add("shake-animation");
-          setTimeout(() => {
-            element.classList.remove("shake-animation");
-          }, 500);
-        }
-      }
-    }
-  };
-
-  // Show ability details with improved accessibility
-  const toggleAbilityDetails = (rank) => {
-    if (showAbilityDetails === rank) {
-      setShowAbilityDetails(null);
-    } else {
-      setShowAbilityDetails(rank);
-    }
   };
 
   // Complete setup and move to the next phase with validation
@@ -434,7 +434,19 @@ const SetupPhase = ({ onComplete, playSound }) => {
                     </div>
                     <div className="card-rank">{card.rank}</div>
                   </div>
-                  <h3 className="hero-title">{classInfo.name}</h3>
+                  <div
+                    className="hero-title"
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevent event from bubbling to parent
+                      toggleClassSelection(rank);
+                    }}
+                    style={{
+                      cursor: "pointer", // Show pointer cursor to indicate clickability
+                      padding: "10px", // Make clickable area larger
+                    }}
+                  >
+                    <h3>{classInfo.name}</h3>
+                  </div>
                 </div>
 
                 <div className="hero-image-container">
