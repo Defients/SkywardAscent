@@ -24,6 +24,14 @@ const heroImages = {
   9: guardianImg, // Guardian
 };
 
+// Hero emojis for quick selection
+const heroEmojis = {
+  3: "🗡️", // Bladedancer - sword
+  5: "🔮", // Manipulator - crystal ball
+  7: "🏹", // Tracker - bow and arrow
+  9: "🛡️", // Guardian - shield
+};
+
 const SetupPhase = ({ onComplete, playSound }) => {
   // State management for setup process
   const [setupOption, setSetupOption] = useState(null);
@@ -45,6 +53,7 @@ const SetupPhase = ({ onComplete, playSound }) => {
   const [errorMessage, setErrorMessage] = useState(null);
   const [showTooltip, setShowTooltip] = useState(false);
   const [hoveredClass, setHoveredClass] = useState(null);
+  const [emojiHovered, setEmojiHovered] = useState(null);
 
   // Initialize the deck with loading animation
   useEffect(() => {
@@ -121,6 +130,17 @@ const SetupPhase = ({ onComplete, playSound }) => {
     } else {
       if (selectedClasses.length < 3) {
         setSelectedClasses([...selectedClasses, numericRank]);
+
+        // Highlight the newly selected class in the table
+        const tableRow = document.querySelector(
+          `.comparison-table tr[data-rank="${numericRank}"]`
+        );
+        if (tableRow) {
+          tableRow.classList.add("pulse-animation");
+          setTimeout(() => {
+            tableRow.classList.remove("pulse-animation");
+          }, 800);
+        }
       } else {
         // Provide visual feedback that 3 is the maximum
         const element = document.querySelector(
@@ -225,7 +245,12 @@ const SetupPhase = ({ onComplete, playSound }) => {
       // Create hero objects from selected classes
       const heroes = selectedClasses.map((rank) => {
         const card = classCards[rank];
+        if (!card) {
+          throw new Error(`Card for rank ${rank} is undefined`);
+        }
+
         const classInfo = CLASS_DATA[rank];
+        // Handle possible undefined color with a fallback
         const specialization =
           card.color === "red" ? classInfo.redSpec : classInfo.blackSpec;
 
@@ -277,6 +302,15 @@ const SetupPhase = ({ onComplete, playSound }) => {
   const handleClassLeave = () => {
     setHoveredClass(null);
     setShowTooltip(false);
+  };
+
+  // Emoji hover effects
+  const handleEmojiHover = (rank) => {
+    setEmojiHovered(rank);
+  };
+
+  const handleEmojiLeave = () => {
+    setEmojiHovered(null);
   };
 
   // Loading screen with progress bar
@@ -397,8 +431,10 @@ const SetupPhase = ({ onComplete, playSound }) => {
 
             const numericRank = parseInt(rank);
             const classInfo = CLASS_DATA[numericRank];
+            // Add fallback handling for color property
+            const cardColor = card.color || "black";
             const specialization =
-              card.color === "red" ? classInfo.redSpec : classInfo.blackSpec;
+              cardColor === "red" ? classInfo.redSpec : classInfo.blackSpec;
             const isSelected = selectedClasses.includes(numericRank);
 
             return (
@@ -459,10 +495,10 @@ const SetupPhase = ({ onComplete, playSound }) => {
                   <div className="specialization-badge">
                     <span
                       className={`spec-icon ${
-                        card.color === "red" ? "red-spec" : "black-spec"
+                        cardColor === "red" ? "red-spec" : "black-spec"
                       }`}
                     >
-                      {card.color === "red" ? "🔥" : "🌑"}
+                      {cardColor === "red" ? "🔥" : "🌑"}
                     </span>
                     <span className="spec-name">{specialization}</span>
                   </div>
@@ -632,7 +668,7 @@ const SetupPhase = ({ onComplete, playSound }) => {
           Begin Adventure
         </motion.button>
 
-        {/* Added class comparison table */}
+        {/* Added class comparison table with clickable emojis */}
         <div className="class-comparison">
           <h3>Class Comparison</h3>
           <table className="comparison-table">
@@ -645,35 +681,114 @@ const SetupPhase = ({ onComplete, playSound }) => {
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td>Bladedancer</td>
-                <td>17</td>
-                <td>25</td>
-                <td>Fast attacks, critical damage</td>
-              </tr>
-              <tr>
-                <td>Manipulator</td>
-                <td>17</td>
-                <td>30</td>
-                <td>Control, psychic abilities</td>
-              </tr>
-              <tr>
-                <td>Tracker</td>
-                <td>14</td>
-                <td>35</td>
-                <td>Ranged attacks, companion</td>
-              </tr>
-              <tr>
-                <td>Guardian</td>
-                <td>18</td>
-                <td>20</td>
-                <td>Defense, party support</td>
-              </tr>
+              {Object.entries(CLASS_DATA).map(([rank, info]) => {
+                const numericRank = parseInt(rank);
+                const isSelected = selectedClasses.includes(numericRank);
+                const isHovered = emojiHovered === numericRank;
+
+                return (
+                  <tr
+                    key={rank}
+                    data-rank={numericRank}
+                    className={isSelected ? "selected-row" : ""}
+                  >
+                    <td className="class-cell">
+                      <motion.span
+                        className={`select-emoji ${
+                          isSelected ? "selected" : ""
+                        } ${isHovered ? "hovered" : ""}`}
+                        onClick={() => toggleClassSelection(rank)}
+                        onMouseEnter={() => handleEmojiHover(numericRank)}
+                        onMouseLeave={handleEmojiLeave}
+                        whileHover={{ scale: 1.2 }}
+                        whileTap={{ scale: 0.9 }}
+                        aria-label={`Select ${info.name}`}
+                        role="button"
+                      >
+                        {heroEmojis[numericRank]}
+                      </motion.span>
+                      <span className="class-name">{info.name}</span>
+                    </td>
+                    <td>{info.health}</td>
+                    <td>{info.startingGold}</td>
+                    <td>
+                      {info.description?.split(".")[0] || "Strategic combat"}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
+          <div className="table-tip">
+            <span className="tip-icon">💡</span>
+            <span className="tip-text">
+              Click on the icons to the left of hero names to quickly select
+              them
+            </span>
+          </div>
         </div>
 
         <Tooltip id="ability-tooltip" />
+
+        {/* Add CSS styles as a regular style element */}
+        <style>
+          {`
+          .comparison-table .class-cell {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+          }
+          
+          .select-emoji {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 18px;
+          }
+          
+          .select-emoji.selected {
+            background: rgba(240, 199, 94, 0.5);
+            box-shadow: 0 0 10px rgba(240, 199, 94, 0.7);
+          }
+          
+          .select-emoji.hovered {
+            transform: scale(1.1);
+          }
+          
+          .selected-row {
+            background: rgba(240, 199, 94, 0.15);
+          }
+          
+          .pulse-animation {
+            animation: pulse 0.8s ease;
+          }
+          
+          @keyframes pulse {
+            0% { background-color: transparent; }
+            50% { background-color: rgba(240, 199, 94, 0.3); }
+            100% { background-color: rgba(240, 199, 94, 0.15); }
+          }
+          
+          .table-tip {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #b8b8c0;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+          }
+          
+          .tip-icon {
+            font-size: 16px;
+          }
+        `}
+        </style>
       </motion.div>
     </AnimatePresence>
   );
