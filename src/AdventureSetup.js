@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { useGameContext, CLASS_DATA } from "../contexts/GameContext";
-import "../styles/AdventureSetup.css";
+import { useGameContext, CLASS_DATA } from "./GameContext";
+import "./styles/AdventureSetup.css";
 
 const AdventureSetup = ({ gameData, onComplete }) => {
   const [setupOption, setSetupOption] = useState(null);

@@ -1,28 +1,24 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { GameProvider } from "./contexts/GameContext";
-import SetupPhase from "./components/SetupPhase";
-import AdventureSetup from "./components/AdventureSetup";
-import WeaponChest from "./components/WeaponChest";
-import SpireClimb from "./components/SpireClimb";
-import Combat from "./components/Combat";
-import Merchant from "./components/Merchant";
-import GameOver from "./components/GameOver";
-import GameMenu from "./components/GameMenu";
-import LoadingScreen from "./components/LoadingScreen";
-import Tutorial from "./components/Tutorial";
+import { GameProvider } from "./GameContext";
+import SetupPhase from "./SetupPhase";
+import AdventureSetup from "./AdventureSetup";
+import WeaponChest from "./WeaponChest";
+import SpireClimb from "./SpireClimb";
+import Combat from "./Combat";
+import Merchant from "./Merchant";
+import GameOver from "./GameOver";
+import GameMenu from "./GameMenu";
+import LoadingScreen from "./LoadingScreen";
+import Tutorial from "./Tutorial";
 import { AnimatePresence, motion } from "framer-motion";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import "./styles/App.css";
+import "./styles/main.css";
 
 // Sound effects
 import useSound from "use-sound";
-import clickSfx from "./assets/sounds/click.mp3";
-import transitionSfx from "./assets/sounds/transition.mp3";
-import victorySfx from "./assets/sounds/victory.mp3";
-import defeatSfx from "./assets/sounds/defeat.mp3";
 
-// Game phases
+// Define constant for game phases
 const PHASES = {
   MENU: "menu",
   SETUP: "setup",
@@ -38,10 +34,22 @@ const PHASES = {
 
 const App = () => {
   // Sound effects
-  const [playClick] = useSound(clickSfx, { volume: 0.5 });
-  const [playTransition] = useSound(transitionSfx, { volume: 0.4 });
-  const [playVictory] = useSound(victorySfx, { volume: 0.6 });
-  const [playDefeat] = useSound(defeatSfx, { volume: 0.6 });
+  const [playClick] = useSound(
+    process.env.PUBLIC_URL + "/assets/sounds/ui/button_click.mp3",
+    { volume: 0.5 }
+  );
+  const [playTransition] = useSound(
+    process.env.PUBLIC_URL + "/assets/sounds/ui/transition.mp3",
+    { volume: 0.4 }
+  );
+  const [playVictory] = useSound(
+    process.env.PUBLIC_URL + "/assets/sounds/results/victory.mp3",
+    { volume: 0.6 }
+  );
+  const [playDefeat] = useSound(
+    process.env.PUBLIC_URL + "/assets/sounds/results/defeat.mp3",
+    { volume: 0.6 }
+  );
 
   // Game state
   const [gamePhase, setGamePhase] = useState(PHASES.MENU);
