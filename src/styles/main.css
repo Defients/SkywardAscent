@@ -1,0 +1,1134 @@
+/* App.css */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #1a1a2e;
+  color: #e6e6e6;
+}
+
+.skyward-ascent {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.game-header {
+  background-color: #16213e;
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.game-header h1 {
+  margin: 0;
+  color: #00a8cc;
+  font-size: 2rem;
+  text-shadow: 0 0 8px rgba(0, 168, 204, 0.5);
+}
+
+.game-stats {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.gold,
+.tier {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: bold;
+  background-color: #0f3460;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+}
+
+.game-container {
+  flex: 1;
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+button {
+  cursor: pointer;
+  background-color: #0f3460;
+  color: #e6e6e6;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+}
+
+button:hover {
+  background-color: #275dad;
+}
+
+button:disabled {
+  background-color: #3a3a5a;
+  cursor: not-allowed;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  font-size: 1.5rem;
+  color: #00a8cc;
+}
+
+/* Card styling */
+.card-display {
+  margin: 10px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.card-symbol {
+  font-size: 1.5rem;
+}
+
+.card-rank {
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+.red {
+  color: #ff6b8b;
+}
+
+.black {
+  color: #9eedf0;
+}
+
+/* Common components */
+.selected {
+  border: 2px solid #00a8cc !important;
+  box-shadow: 0 0 10px rgba(0, 168, 204, 0.5);
+}
+
+.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.tapped {
+  transform: rotate(45deg);
+}
+
+/* SetupPhase.css */
+.setup-options {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.setup-buttons {
+  display: flex;
+  gap: 2rem;
+}
+
+.quick-play,
+.advanced-play {
+  padding: 1.5rem 3rem;
+  font-size: 1.2rem;
+  font-weight: bold;
+  border-radius: 8px;
+}
+
+.quick-play {
+  background-color: #16213e;
+}
+
+.advanced-play {
+  background-color: #0f3460;
+}
+
+.class-selection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+}
+
+.heroes-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2rem;
+  margin-top: 1rem;
+  width: 100%;
+}
+
+.hero-card {
+  background-color: #16213e;
+  border-radius: 8px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+}
+
+.hero-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.hero-card.selected {
+  border-color: #00a8cc;
+}
+
+.hero-info {
+  margin-top: 1rem;
+}
+
+.hero-info h3 {
+  margin: 0 0 0.5rem 0;
+  color: #00a8cc;
+}
+
+.specialization,
+.health,
+.ability {
+  margin: 0.5rem 0;
+  font-size: 0.9rem;
+}
+
+.selected-count {
+  margin-top: 1rem;
+  font-weight: bold;
+  color: #00a8cc;
+}
+
+.complete-button {
+  margin-top: 2rem;
+  padding: 1rem 2rem;
+  font-size: 1.2rem;
+  background-color: #275dad;
+}
+
+/* AdventureSetup.css */
+.adventure-options {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.adventure-setup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+}
+
+.heroes-summary,
+.resources {
+  background-color: #16213e;
+  border-radius: 8px;
+  padding: 1.5rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.hero-party {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.hero-summary {
+  flex: 1;
+  background-color: #0f3460;
+  padding: 1rem;
+  border-radius: 4px;
+}
+
+.hero-summary h4 {
+  margin: 0 0 0.5rem 0;
+  color: #00a8cc;
+}
+
+.gold-summary,
+.items-summary {
+  margin-top: 1rem;
+}
+
+.gold-amount {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #00a8cc;
+}
+
+.item-list {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.item {
+  background-color: #0f3460;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.item-icon {
+  font-size: 1.2rem;
+}
+
+.continue-button {
+  margin-top: 2rem;
+  padding: 1rem 2rem;
+  font-size: 1.2rem;
+  background-color: #275dad;
+}
+
+/* WeaponChest.css */
+.weapon-chest,
+.weapon-chest-flipping {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+}
+
+.hero-selection {
+  display: flex;
+  gap: 2rem;
+  margin-top: 1rem;
+}
+
+.hero-option {
+  background-color: #16213e;
+  border-radius: 8px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  width: 200px;
+}
+
+.hero-option:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.hero-option h3 {
+  margin: 0 0 0.5rem 0;
+  color: #00a8cc;
+}
+
+.select-button {
+  margin-top: 1rem;
+  width: 100%;
+}
+
+.chest-message {
+  background-color: #16213e;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  font-size: 1.2rem;
+  text-align: center;
+  max-width: 80%;
+}
+
+.flipped-card {
+  background-color: #0f3460;
+  padding: 1.5rem;
+  border-radius: 8px;
+  font-size: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 1rem;
+  width: 100px;
+  height: 150px;
+  display: flex;
+  justify-content: center;
+  position: relative;
+}
+
+.chest-status {
+  background-color: #16213e;
+  padding: 1.5rem;
+  border-radius: 8px;
+  width: 80%;
+}
+
+.weapon-result,
+.gold-result,
+.enchant-result {
+  margin: 0.5rem 0;
+}
+
+.chest-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.flip-button,
+.risk-button,
+.safe-button,
+.complete-button {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+}
+
+.risk-button {
+  background-color: #e63946;
+}
+
+.risk-button:hover {
+  background-color: #d90429;
+}
+
+.safe-button {
+  background-color: #2a9d8f;
+}
+
+.safe-button:hover {
+  background-color: #26a69a;
+}
+
+/* Combat.css */
+.combat-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.combat-message {
+  background-color: #16213e;
+  padding: 1rem;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+}
+
+.monster-display {
+  background-color: #0f3460;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.monster-health {
+  margin: 0.5rem 0;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.monster-attached-cards {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.attached-card {
+  background-color: #16213e;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+.environment {
+  background-color: #16213e;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  display: inline-block;
+  margin-bottom: 1rem;
+}
+
+.card-flips {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.monster-flips,
+.monster-roll,
+.hero-flips,
+.hero-roll {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.flipped-cards {
+  display: flex;
+  gap: 1rem;
+}
+
+.roll-result {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #00a8cc;
+}
+
+.heroes-display {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.hero {
+  flex: 1;
+  background-color: #16213e;
+  padding: 1rem;
+  border-radius: 8px;
+  position: relative;
+}
+
+.hero.active {
+  border: 2px solid #00a8cc;
+}
+
+.hero.defeated {
+  opacity: 0.5;
+  background-color: #3a3a5a;
+}
+
+.hero h4 {
+  margin: 0 0 0.5rem 0;
+  color: #00a8cc;
+}
+
+.hero-health {
+  margin-bottom: 0.5rem;
+}
+
+.hero-markers {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.marker {
+  font-size: 1.2rem;
+}
+
+.combat-log {
+  background-color: #16213e;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.log-entries {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.log-entry {
+  border-bottom: 1px solid #0f3460;
+  padding-bottom: 0.5rem;
+}
+
+.turn-order-selection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.direction-buttons {
+  display: flex;
+  gap: 2rem;
+}
+
+.combat-results {
+  background-color: #16213e;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin: 1rem 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.rewards {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+
+.item-rewards ul {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0 0 0;
+}
+
+.finish-combat {
+  margin-top: 1rem;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  background-color: #275dad;
+}
+
+/* SpireClimb.css */
+.spire-climb {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.spire-message {
+  background-color: #16213e;
+  padding: 1rem;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 1.2rem;
+}
+
+.tier-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 10px;
+  background-color: #16213e;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background-color: #00a8cc;
+  transition: width 0.3s ease;
+}
+
+.room-count {
+  font-size: 0.9rem;
+  color: #c5c5c5;
+}
+
+.path-visualization {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+  margin: 1rem 0;
+}
+
+.path-room {
+  background-color: #16213e;
+  padding: 1rem;
+  border-radius: 8px;
+  min-width: 100px;
+  text-align: center;
+  position: relative;
+}
+
+.path-room.current {
+  border: 2px solid #00a8cc;
+  background-color: #0f3460;
+}
+
+.path-room.past {
+  opacity: 0.5;
+}
+
+.path-choice {
+  display: flex;
+  gap: 1rem;
+}
+
+.path-option {
+  background-color: #16213e;
+  padding: 1rem;
+  border-radius: 8px;
+  min-width: 100px;
+  text-align: center;
+}
+
+.room-button {
+  background: none;
+  border: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  color: #e6e6e6;
+}
+
+.room-icon {
+  font-size: 1.5rem;
+}
+
+.heroes-status {
+  background-color: #16213e;
+  padding: 1.5rem;
+  border-radius: 8px;
+}
+
+.hero-list {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.hero-status {
+  flex: 1;
+  background-color: #0f3460;
+  padding: 1rem;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.hero-status.fallen {
+  background-color: #3a3a5a;
+  opacity: 0.7;
+}
+
+.hero-name {
+  font-weight: bold;
+  color: #00a8cc;
+}
+
+.spire-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.proceed-button {
+  padding: 1rem 2rem;
+  font-size: 1.2rem;
+  background-color: #275dad;
+}
+
+/* HeartRoom.css */
+.heart-room {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.blessing-message {
+  background-color: #16213e;
+  padding: 1rem;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 1.2rem;
+}
+
+.roll-result {
+  margin-top: 0.5rem;
+  font-weight: bold;
+  color: #00a8cc;
+}
+
+.benefits-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+
+.benefit-option {
+  background-color: #16213e;
+  padding: 1.5rem;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  position: relative;
+}
+
+.benefit-option:hover:not(.disabled) {
+  transform: translateY(-5px);
+}
+
+.benefit-option.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.benefit-icon {
+  font-size: 2rem;
+}
+
+.benefit-title {
+  margin: 0;
+  color: #00a8cc;
+  text-align: center;
+}
+
+.benefit-description {
+  margin: 0;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.heart-room-heroes {
+  background-color: #16213e;
+  padding: 1.5rem;
+  border-radius: 8px;
+}
+
+.heroes-list {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.hero-status {
+  flex: 1;
+  padding: 1rem;
+  border-radius: 4px;
+}
+
+.hero-status.fallen {
+  background-color: #e63946;
+}
+
+.hero-status.wounded {
+  background-color: #e9c46a;
+  color: #333;
+}
+
+.hero-status.healthy {
+  background-color: #2a9d8f;
+}
+
+/* Merchant.css */
+.merchant {
+  display: grid;
+  grid-template-columns: 3fr 1fr;
+  gap: 2rem;
+}
+
+.merchant-message {
+  grid-column: 1 / -1;
+  background-color: #16213e;
+  padding: 1rem;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 1.2rem;
+}
+
+.merchant-interface {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.merchant-tabs {
+  display: flex;
+  gap: 0.5rem;
+  background-color: #16213e;
+  padding: 0.5rem;
+  border-radius: 8px 8px 0 0;
+}
+
+.tab {
+  padding: 0.75rem 1rem;
+  border-radius: 4px;
+  background: none;
+  color: #e6e6e6;
+  border: none;
+  cursor: pointer;
+}
+
+.tab.active {
+  background-color: #0f3460;
+  font-weight: bold;
+}
+
+.merchant-items {
+  background-color: #16213e;
+  padding: 1.5rem;
+  border-radius: 0 0 8px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.merchant-item {
+  background-color: #0f3460;
+  padding: 1rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.merchant-item:hover:not(.disabled) {
+  transform: translateY(-3px);
+}
+
+.item-icon {
+  font-size: 1.5rem;
+  min-width: 40px;
+  text-align: center;
+}
+
+.item-details {
+  flex: 1;
+}
+
+.item-name {
+  margin: 0 0 0.5rem 0;
+  color: #00a8cc;
+}
+
+.item-description {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.item-price {
+  font-weight: bold;
+  color: #00a8cc;
+}
+
+.merchant-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.gold-display {
+  background-color: #16213e;
+  padding: 1rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.gold-icon {
+  font-size: 1.5rem;
+}
+
+.inventory-list,
+.heroes-list {
+  background-color: #16213e;
+  padding: 1.5rem;
+  border-radius: 8px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.inventory-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.inventory-item {
+  background-color: #0f3460;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.empty-inventory {
+  color: #c5c5c5;
+  font-style: italic;
+}
+
+.hero-entry {
+  background-color: #0f3460;
+  padding: 1rem;
+  border-radius: 4px;
+  margin-bottom: 0.5rem;
+}
+
+.hero-entry.selectable {
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.hero-entry.selectable:hover {
+  transform: translateY(-3px);
+}
+
+.hero-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.hero-weapon {
+  font-size: 0.9rem;
+  color: #c5c5c5;
+}
+
+.finish-button {
+  padding: 1rem;
+  background-color: #275dad;
+  font-weight: bold;
+  margin-top: 1rem;
+}
+
+/* GameOver.css */
+.game-over {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.result-message {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #00a8cc;
+  text-align: center;
+}
+
+.game-stats {
+  background-color: #16213e;
+  padding: 1.5rem;
+  border-radius: 8px;
+  width: 100%;
+}
+
+.stats-list {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0 0 0;
+}
+
+.stats-list li {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid #0f3460;
+  padding: 0.75rem 0;
+}
+
+.stat-label {
+  font-weight: bold;
+}
+
+.stat-value {
+  color: #00a8cc;
+}
+
+.hero-results {
+  width: 100%;
+}
+
+.hero-results-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.hero-result {
+  background-color: #16213e;
+  padding: 1.5rem;
+  border-radius: 8px;
+}
+
+.hero-result.fallen {
+  border-left: 4px solid #e63946;
+}
+
+.hero-result.alive {
+  border-left: 4px solid #2a9d8f;
+}
+
+.hero-name {
+  margin: 0 0 1rem 0;
+  color: #00a8cc;
+}
+
+.hero-spec,
+.hero-status,
+.hero-weapon {
+  margin: 0.5rem 0;
+  display: flex;
+  justify-content: space-between;
+}
+
+.spec-label,
+.status-label,
+.weapon-label {
+  font-weight: bold;
+  color: #c5c5c5;
+}
+
+.final-rating {
+  background-color: #16213e;
+  padding: 1.5rem;
+  border-radius: 8px;
+  width: 100%;
+  text-align: center;
+}
+
+.rating {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #00a8cc;
+  margin-top: 1rem;
+}
+
+.restart-button {
+  padding: 1rem 2rem;
+  font-size: 1.2rem;
+  background-color: #275dad;
+  margin-top: 1rem;
+}

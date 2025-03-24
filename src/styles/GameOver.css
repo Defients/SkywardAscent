@@ -1,0 +1,484 @@
+.game-over {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+  position: relative;
+  overflow: hidden;
+  min-height: 80vh;
+}
+
+.game-over::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0.2;
+  z-index: -1;
+}
+
+.game-over.victory::before {
+  background-image: linear-gradient(
+      rgba(76, 175, 80, 0.2),
+      rgba(10, 15, 30, 0.8)
+    ),
+    var(--bg-image);
+}
+
+.game-over.defeat::before {
+  background-image: linear-gradient(
+      rgba(244, 67, 54, 0.2),
+      rgba(10, 15, 30, 0.8)
+    ),
+    var(--bg-image);
+}
+
+.result-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.victory-title {
+  font-size: 3rem;
+  color: #4caf50;
+  margin: 0 0 1rem 0;
+  text-shadow: 0 0 20px rgba(76, 175, 80, 0.5);
+}
+
+.defeat-title {
+  font-size: 3rem;
+  color: #f44336;
+  margin: 0 0 1rem 0;
+  text-shadow: 0 0 20px rgba(244, 67, 54, 0.5);
+}
+
+.result-message {
+  font-size: 1.5rem;
+  line-height: 1.4;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.content-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  width: 100%;
+  max-width: 600px;
+}
+
+.tab {
+  background-color: #16213e;
+  color: #e6e6e6;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px 8px 0 0;
+  cursor: pointer;
+  font-size: 1.1rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.tab:hover {
+  background-color: #1e4d8c;
+}
+
+.tab.active {
+  background-color: #275dad;
+  color: #fff;
+  font-weight: 600;
+}
+
+/* Summary View */
+.summary-view,
+.heroes-view,
+.achievements-view {
+  background-color: #16213e;
+  padding: 2rem;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 600px;
+  min-height: 400px;
+}
+
+.game-stats {
+  margin-bottom: 2rem;
+}
+
+.game-stats h3,
+.hero-results h3,
+.achievements-list h3,
+.final-rating h3 {
+  margin: 0 0 1.5rem 0;
+  color: #00a8cc;
+  font-size: 1.5rem;
+  text-align: center;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.stat-item {
+  background-color: #0f3460;
+  padding: 1rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.stat-icon {
+  font-size: 1.8rem;
+  color: #00a8cc;
+}
+
+.stat-details {
+  flex: 1;
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  color: #c5c5c5;
+  margin-bottom: 0.25rem;
+}
+
+.stat-value {
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.final-rating {
+  background-color: #0f3460;
+  padding: 1.5rem;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.rating {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 1rem 0;
+  color: #00a8cc;
+  text-shadow: 0 0 10px rgba(0, 168, 204, 0.3);
+}
+
+.rating-stars {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.star {
+  font-size: 1.5rem;
+  animation: twinkle 2s infinite ease-in-out;
+}
+
+.star:nth-child(2) {
+  animation-delay: 0.4s;
+}
+
+.star:nth-child(3) {
+  animation-delay: 0.8s;
+}
+
+.star:nth-child(4) {
+  animation-delay: 1.2s;
+}
+
+.star:nth-child(5) {
+  animation-delay: 1.6s;
+}
+
+/* Heroes View */
+.hero-results-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.hero-result {
+  background-color: #0f3460;
+  padding: 1.5rem;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.hero-result.fallen {
+  border-left: 4px solid #f44336;
+}
+
+.hero-result.alive {
+  border-left: 4px solid #4caf50;
+}
+
+.hero-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.hero-name {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #00a8cc;
+  margin: 0;
+}
+
+.hero-status {
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.status-fallen {
+  background-color: rgba(244, 67, 54, 0.2);
+  color: #f44336;
+}
+
+.status-alive {
+  background-color: rgba(76, 175, 80, 0.2);
+  color: #4caf50;
+}
+
+.hero-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.hero-spec,
+.hero-status,
+.hero-weapon {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+}
+
+.spec-label,
+.status-label,
+.weapon-label {
+  color: #c5c5c5;
+}
+
+.hero-health-bar {
+  height: 10px;
+  background-color: #16213e;
+  border-radius: 5px;
+  overflow: hidden;
+  margin: 0.5rem 0;
+}
+
+.health-bar-fill {
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+.hero-journey {
+  background-color: #16213e;
+  padding: 0.75rem;
+  border-radius: 4px;
+  margin-top: 0.5rem;
+}
+
+.journey-title {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #00a8cc;
+  margin-bottom: 0.5rem;
+}
+
+.journey-text {
+  font-size: 0.9rem;
+  line-height: 1.4;
+  margin: 0;
+  color: #c5c5c5;
+}
+
+/* Achievements View */
+.achievements-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.achievement-item {
+  background-color: #0f3460;
+  padding: 1rem;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+.achievement-item.earned {
+  border-left: 4px solid #ffc107;
+}
+
+.achievement-item.locked {
+  opacity: 0.7;
+  border-left: 4px solid #757575;
+}
+
+.achievement-icon {
+  font-size: 2rem;
+  margin-bottom: 0.75rem;
+  align-self: center;
+}
+
+.earned-icon {
+  color: #ffc107;
+}
+
+.locked-icon {
+  color: #757575;
+}
+
+.achievement-details {
+  flex: 1;
+}
+
+.achievement-title {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.1rem;
+  color: #00a8cc;
+}
+
+.achievement-description {
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: #c5c5c5;
+  margin: 0 0 0.75rem 0;
+}
+
+.achievement-points {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #ffc107;
+  align-self: flex-end;
+}
+
+.achievement-badge {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  width: 40px;
+  height: 40px;
+}
+
+.achievement-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #0f3460;
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+.earned-label,
+.points-label {
+  color: #c5c5c5;
+  margin-right: 0.5rem;
+}
+
+.earned-value,
+.points-value {
+  font-weight: 600;
+}
+
+.points-value {
+  color: #ffc107;
+}
+
+/* Restart Options */
+.restart-options {
+  margin-top: 2rem;
+  display: flex;
+  justify-content: center;
+}
+
+.restart-button {
+  padding: 1rem 2rem;
+  background-color: #275dad;
+  color: #e6e6e6;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1.1rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.restart-button:hover {
+  background-color: #1e4d8c;
+  transform: translateY(-3px);
+}
+
+/* Confetti Container */
+.confetti-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Animations */
+@keyframes twinkle {
+  0% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+  100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .content-tabs {
+    flex-wrap: wrap;
+  }
+
+  .hero-results-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .achievements-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .summary-view,
+  .heroes-view,
+  .achievements-view {
+    padding: 1.5rem;
+  }
+}

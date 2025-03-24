@@ -1,0 +1,335 @@
+/* Tutorial.css */
+.tutorial-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(10, 15, 30, 0.9);
+  z-index: 1000;
+  overflow: hidden;
+  color: #e6e6e6;
+}
+
+.tutorial-content {
+  background-color: #16213e;
+  width: 90%;
+  max-width: 1000px;
+  max-height: 90vh;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  padding: 2rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  position: relative;
+  overflow: hidden;
+}
+
+.tutorial-progress {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 6px;
+  background-color: #0f3460;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background-color: #00a8cc;
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  font-size: 0.9rem;
+  color: #c5c5c5;
+}
+
+.section-title {
+  font-size: 2rem;
+  margin: 0 0 1.5rem;
+  color: #00a8cc;
+  text-align: center;
+  text-shadow: 0 0 10px rgba(0, 168, 204, 0.3);
+}
+
+.main-content-area {
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  flex: 1;
+  overflow: hidden;
+}
+
+.tutorial-image-container {
+  flex: 1;
+  max-width: 50%;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  background-color: #0f3460;
+}
+
+.tutorial-image {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.tutorial-placeholder {
+  width: 100%;
+  aspect-ratio: 16/9;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: #0f3460;
+  color: #00a8cc;
+}
+
+.placeholder-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+}
+
+.placeholder-text {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.tutorial-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  max-height: 40vh;
+  overflow-y: auto;
+}
+
+.section-content {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin: 0 0 1.5rem;
+}
+
+.tip-container {
+  background-color: #0f3460;
+  padding: 1rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-top: auto;
+}
+
+.tip-icon {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.tip-text {
+  font-size: 1rem;
+  line-height: 1.5;
+  margin: 0;
+  flex: 1;
+  color: #c5c5c5;
+}
+
+.tutorial-navigation {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem;
+}
+
+.main-nav-buttons {
+  display: flex;
+  gap: 1rem;
+}
+
+.nav-button {
+  background-color: #0f3460;
+  color: #e6e6e6;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.nav-button:hover {
+  background-color: #275dad;
+}
+
+.nav-button:disabled {
+  background-color: #3a3a5a;
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.next-button {
+  background-color: #275dad;
+}
+
+.skip-button {
+  background-color: #3a3a5a;
+}
+
+.button-icon {
+  font-size: 1.2rem;
+}
+
+.tutorial-overview {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 300px;
+  height: 100%;
+  background-color: #0f3460;
+  box-shadow: 5px 0 15px rgba(0, 0, 0, 0.2);
+  padding: 2rem;
+  z-index: 10;
+}
+
+.tutorial-overview h3 {
+  margin-top: 0;
+  color: #00a8cc;
+  font-size: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.overview-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.overview-list li {
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.overview-list li:hover {
+  background-color: #16213e;
+}
+
+.overview-list li.active {
+  background-color: #275dad;
+}
+
+.section-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 25px;
+  height: 25px;
+  background-color: #00a8cc;
+  color: #0f3460;
+  border-radius: 50%;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+.close-overview {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  color: #e6e6e6;
+  font-size: 1.5rem;
+  cursor: pointer;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.close-overview:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.auto-advance-toggle {
+  position: absolute;
+  bottom: 1rem;
+  left: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #c5c5c5;
+  font-size: 0.9rem;
+}
+
+.toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.toggle-label input {
+  margin: 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .main-content-area {
+    flex-direction: column;
+  }
+
+  .tutorial-image-container {
+    max-width: 100%;
+  }
+
+  .tutorial-content {
+    padding: 1.5rem;
+    max-height: 95vh;
+  }
+
+  .section-title {
+    font-size: 1.5rem;
+  }
+
+  .tutorial-overview {
+    width: 250px;
+  }
+}
+
+/* Animation keyframes for fireworks/highlights */
+@keyframes glow {
+  0% {
+    box-shadow: 0 0 5px rgba(0, 168, 204, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(0, 168, 204, 0.8);
+  }
+  100% {
+    box-shadow: 0 0 5px rgba(0, 168, 204, 0.5);
+  }
+}
+
+.highlight {
+  animation: glow 2s ease-in-out infinite;
+}

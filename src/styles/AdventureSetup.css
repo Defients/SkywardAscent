@@ -1,0 +1,250 @@
+.adventure-options {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 800px;
+    margin: 0 auto;
+    text-align: center;
+  }
+  
+  .adventure-options h2 {
+    margin: 0 0 1.5rem 0;
+    color: #00a8cc;
+    font-size: 2rem;
+    text-shadow: 0 0 10px rgba(0, 168, 204, 0.3);
+  }
+  
+  .setup-buttons {
+    display: flex;
+    gap: 2rem;
+    margin: 2rem 0;
+  }
+  
+  .quick-play, .advanced-play {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    background-color: #16213e;
+    padding: 1.5rem;
+    border-radius: 8px;
+    width: 270px;
+    height: 180px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: #e6e6e6;
+    text-align: center;
+  }
+  
+  .quick-play:hover, .advanced-play:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+  }
+  
+  .quick-play {
+    border-left: 4px solid #4caf50;
+  }
+  
+  .advanced-play {
+    border-left: 4px solid #f44336;
+  }
+  
+  .quick-play:hover {
+    background-color: #1d4427;
+  }
+  
+  .advanced-play:hover {
+    background-color: #572a2a;
+  }
+  
+  .button-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .button-text {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+  
+  .button-desc {
+    font-size: 0.9rem;
+    color: #c5c5c5;
+  }
+  
+  /* Adventure Setup Complete */
+  .adventure-setup {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  .adventure-setup h2 {
+    margin: 0 0 1.5rem 0;
+    color: #00a8cc;
+    font-size: 2rem;
+    text-shadow: 0 0 10px rgba(0, 168, 204, 0.3);
+    text-align: center;
+  }
+  
+  .heroes-summary, .resources {
+    background-color: #16213e;
+    padding: 1.5rem;
+    border-radius: 8px;
+    width: 100%;
+    margin-bottom: 1.5rem;
+  }
+  
+  .heroes-summary h3, .resources h3 {
+    margin: 0 0 1rem 0;
+    color: #00a8cc;
+    font-size: 1.5rem;
+    text-align: center;
+  }
+  
+  .hero-party {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+  }
+  
+  .hero-summary {
+    background-color: #0f3460;
+    padding: 1rem;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .hero-summary h4 {
+    margin: 0;
+    color: #00a8cc;
+    font-size: 1.2rem;
+  }
+  
+  .hero-summary p {
+    margin: 0;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .gold-summary, .items-summary {
+    margin-top: 1.5rem;
+  }
+  
+  .gold-amount {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background-color: #0f3460;
+    padding: 1rem;
+    border-radius: 8px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-top: 0.75rem;
+  }
+  
+  .gold-icon {
+    font-size: 1.5rem;
+    color: #ffc107;
+  }
+  
+  .item-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+  }
+  
+  .item {
+    background-color: #0f3460;
+    padding: 0.5rem 0.75rem;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+  
+  .item-icon {
+    font-size: 1.2rem;
+  }
+  
+  /* Item type colors */
+  .item.potion {
+    border-left: 3px solid #4caf50;
+  }
+  
+  .item.scroll {
+    border-left: 3px solid #ff9800;
+  }
+  
+  .item.weapon {
+    border-left: 3px solid #f44336;
+  }
+  
+  .item.misc {
+    border-left: 3px solid #9c27b0;
+  }
+  
+  .continue-button {
+    padding: 1rem 2rem;
+    background-color: #275dad;
+    color: #e6e6e6;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-weight: 600;
+    font-size: 1.1rem;
+    transition: all 0.2s ease;
+    margin-top: 1rem;
+  }
+  
+  .continue-button:hover {
+    background-color: #1e4d8c;
+    transform: translateY(-3px);
+  }
+  
+  .loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 300px;
+    font-size: 1.5rem;
+    color: #00a8cc;
+  }
+  
+  /* Animations */
+  @keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+  }
+  
+  /* Responsive Adjustments */
+  @media (max-width: 768px) {
+    .setup-buttons {
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+    
+    .hero-party {
+      grid-template-columns: 1fr;
+    }
+    
+    .quick-play, .advanced-play {
+      width: 100%;
+      max-width: 270px;
+    }
+  }
