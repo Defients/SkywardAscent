@@ -6,7 +6,7 @@ import {
   WEAPONS,
   ENCHANTMENTS,
   getSuitColorClass,
-} from "./GameContext";
+} from "./contexts/GameContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { Tooltip } from "react-tooltip";
 import "./styles/WeaponChest.css";

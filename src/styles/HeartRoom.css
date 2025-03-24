@@ -1,0 +1,715 @@
+/* HeartRoom.css - Styling for the Heart Room blessing component */
+
+/* --- Main Container --- */
+.heart-room {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  width: 100%;
+  padding: 2rem;
+  color: #e1e1e6;
+  background-color: #16213e;
+  background-size: cover;
+  background-position: center;
+  overflow: hidden;
+}
+
+.heart-room::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(
+    circle at center,
+    rgba(255, 102, 102, 0.2) 0%,
+    rgba(22, 33, 62, 0.9) 70%
+  );
+  z-index: 0;
+  animation: pulse 5s infinite alternate;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.heart-room h2 {
+  position: relative;
+  color: #ff6666;
+  font-size: 2.5rem;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  text-shadow: 0 0 10px rgba(255, 102, 102, 0.5);
+  z-index: 1;
+}
+
+/* --- Room Intro --- */
+.room-intro {
+  position: relative;
+  max-width: 800px;
+  text-align: center;
+  padding: 2rem;
+  background-color: rgba(22, 33, 62, 0.8);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 102, 102, 0.4);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3), 0 0 15px rgba(255, 102, 102, 0.3);
+  z-index: 1;
+}
+
+.intro-text {
+  line-height: 1.6;
+  font-size: 1.1rem;
+}
+
+/* --- Blessing Selection --- */
+.blessing-selection {
+  position: relative;
+  width: 100%;
+  max-width: 1200px;
+  background-color: rgba(22, 33, 62, 0.8);
+  border-radius: 10px;
+  padding: 2rem;
+  z-index: 1;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+.altar-container {
+  position: relative;
+  max-width: 400px;
+  margin: 0 auto 2rem;
+  text-align: center;
+}
+
+.altar-image {
+  max-width: 100%;
+  height: auto;
+  filter: drop-shadow(0 0 10px rgba(255, 102, 102, 0.5));
+}
+
+.altar-glow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.glow-image {
+  max-width: 120%;
+  max-height: 120%;
+  opacity: 0.7;
+  animation: glow 4s infinite alternate;
+}
+
+@keyframes glow {
+  0% {
+    opacity: 0.4;
+    transform: scale(1);
+    filter: blur(5px);
+  }
+  100% {
+    opacity: 0.8;
+    transform: scale(1.1);
+    filter: blur(3px);
+  }
+}
+
+.blessing-message {
+  text-align: center;
+  font-size: 1.2rem;
+  margin-bottom: 2rem;
+  color: #ff9999;
+  text-shadow: 0 0 5px rgba(255, 102, 102, 0.3);
+}
+
+.roll-result {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-top: 1rem;
+  color: #ffcc66;
+}
+
+.benefits-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.benefit-option {
+  position: relative;
+  padding: 1.5rem;
+  background-color: rgba(42, 58, 90, 0.8);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 102, 102, 0.3);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.benefit-option:hover:not(.disabled) {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2), 0 0 15px rgba(255, 102, 102, 0.4);
+  background-color: rgba(50, 70, 110, 0.9);
+}
+
+.benefit-option.selected {
+  background-color: rgba(255, 102, 102, 0.15);
+  border: 1px solid rgba(255, 102, 102, 0.7);
+  box-shadow: 0 0 20px rgba(255, 102, 102, 0.4);
+}
+
+.benefit-option.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.benefit-light {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 102, 102, 0) 0%,
+    rgba(255, 102, 102, 0.7) 50%,
+    rgba(255, 102, 102, 0) 100%
+  );
+  animation: shine 3s infinite;
+}
+
+@keyframes shine {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.benefit-icon {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: center;
+}
+
+.benefit-title {
+  font-size: 1.2rem;
+  color: #ff9999;
+  margin-bottom: 0.8rem;
+  text-align: center;
+}
+
+.benefit-description {
+  font-size: 0.9rem;
+  color: #b8b8c0;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.disabled-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+}
+
+.disabled-text {
+  color: #ff5555;
+  font-weight: bold;
+  background-color: rgba(0, 0, 0, 0.7);
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+}
+
+/* --- Heroes Status --- */
+.heart-room-heroes {
+  margin-top: 2rem;
+  width: 100%;
+}
+
+.heart-room-heroes h3 {
+  text-align: center;
+  color: #ff9999;
+  margin-bottom: 1rem;
+  font-size: 1.3rem;
+}
+
+.heroes-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.hero-status {
+  padding: 1rem;
+  background-color: rgba(42, 58, 90, 0.8);
+  border-radius: 6px;
+  border: 1px solid rgba(255, 102, 102, 0.2);
+}
+
+.hero-status.fallen {
+  border-color: rgba(255, 85, 85, 0.5);
+  background-color: rgba(100, 30, 30, 0.3);
+}
+
+.hero-status.wounded {
+  border-color: rgba(255, 193, 7, 0.5);
+}
+
+.hero-status.healthy {
+  border-color: rgba(76, 175, 80, 0.5);
+}
+
+.hero-status.changed {
+  animation: highlight 2s;
+}
+
+@keyframes highlight {
+  0%,
+  100% {
+    background-color: rgba(42, 58, 90, 0.8);
+  }
+  50% {
+    background-color: rgba(255, 102, 102, 0.3);
+  }
+}
+
+.hero-name {
+  font-weight: bold;
+  color: #e1e1e6;
+  margin-bottom: 0.5rem;
+}
+
+.hero-health-bar {
+  position: relative;
+  height: 20px;
+  background-color: rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.health-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4caf50, #8bc34a);
+  border-radius: 10px;
+  transition: width 0.5s ease;
+}
+
+.fallen .health-fill {
+  background: linear-gradient(90deg, #f44336, #e91e63);
+  width: 0 !important;
+}
+
+.wounded .health-fill {
+  background: linear-gradient(90deg, #ffc107, #ff9800);
+}
+
+.health-text {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 0 0 3px rgba(0, 0, 0, 0.7);
+}
+
+.health-change {
+  margin-left: 0.5rem;
+  color: #4caf50;
+  font-weight: bold;
+}
+
+.health-change:empty {
+  display: none;
+}
+
+/* --- Blessing Confirmation --- */
+.blessing-confirmation {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.confirmation-content {
+  background-color: rgba(22, 33, 62, 0.95);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 102, 102, 0.5);
+  padding: 2rem;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4), 0 0 20px rgba(255, 102, 102, 0.4);
+}
+
+.selected-blessing {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.blessing-icon {
+  font-size: 2.5rem;
+  margin-right: 1.5rem;
+}
+
+.blessing-details {
+  flex: 1;
+}
+
+.blessing-details h3 {
+  color: #ff9999;
+  margin: 0 0 0.5rem 0;
+  font-size: 1.3rem;
+}
+
+.blessing-details p {
+  color: #b8b8c0;
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.effect-description {
+  background-color: rgba(0, 0, 0, 0.2);
+  padding: 1rem;
+  border-radius: 6px;
+  margin-bottom: 1.5rem;
+  border-left: 3px solid rgba(255, 102, 102, 0.5);
+}
+
+.effect-description p {
+  margin: 0;
+  line-height: 1.6;
+  color: #e1e1e6;
+}
+
+.confirmation-buttons {
+  display: flex;
+  gap: 1rem;
+}
+
+.cancel-button,
+.confirm-button {
+  flex: 1;
+  padding: 0.8rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.cancel-button {
+  background-color: rgba(255, 85, 85, 0.2);
+  color: #ff5555;
+  border: 1px solid #ff5555;
+}
+
+.cancel-button:hover {
+  background-color: rgba(255, 85, 85, 0.3);
+}
+
+.confirm-button {
+  background-color: #ff9999;
+  color: #16213e;
+}
+
+.confirm-button:hover {
+  background-color: #ffb3b3;
+}
+
+/* --- Blessing Applied --- */
+.blessing-applied {
+  width: 100%;
+  max-width: 800px;
+  background-color: rgba(22, 33, 62, 0.8);
+  border-radius: 10px;
+  padding: 2rem;
+  text-align: center;
+  border: 1px solid rgba(255, 102, 102, 0.4);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3), 0 0 15px rgba(255, 102, 102, 0.3);
+  z-index: 1;
+}
+
+.effect-animation {
+  margin: 2rem 0;
+  position: relative;
+  height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.effect-icon {
+  font-size: 4rem;
+  position: relative;
+}
+
+.dice-rolling {
+  position: relative;
+}
+
+.dice {
+  width: 80px;
+  height: 80px;
+  background-color: #f0c75e;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #16213e;
+  box-shadow: 0 0 20px rgba(240, 199, 94, 0.5);
+  animation: roll 0.5s infinite;
+}
+
+@keyframes roll {
+  0% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(5deg);
+  }
+  75% {
+    transform: rotate(-5deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+.heal-effect {
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(
+    circle,
+    rgba(76, 175, 80, 0.7) 0%,
+    rgba(76, 175, 80, 0) 70%
+  );
+  border-radius: 50%;
+  animation: healPulse 2s infinite;
+  z-index: -1;
+}
+
+@keyframes healPulse {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.3;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(0.8);
+    opacity: 0.3;
+  }
+}
+
+.gold-effect {
+  position: absolute;
+  top: -30%;
+  left: -30%;
+  width: 160%;
+  height: 160%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 193, 7, 0.7) 0%,
+    rgba(255, 193, 7, 0) 70%
+  );
+  border-radius: 50%;
+  animation: goldPulse 1.5s infinite;
+  z-index: -1;
+}
+
+@keyframes goldPulse {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.3;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(0.8);
+    opacity: 0.3;
+  }
+}
+
+.effect-message {
+  font-size: 1.3rem;
+  margin-bottom: 2rem;
+  color: #ff9999;
+  text-shadow: 0 0 5px rgba(255, 102, 102, 0.3);
+}
+
+.updated-heroes {
+  margin-top: 2rem;
+}
+
+.updated-heroes h3 {
+  color: #ff9999;
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+}
+
+.updated-gold {
+  margin-top: 2rem;
+}
+
+.updated-gold h3 {
+  color: #ff9999;
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+}
+
+.gold-change {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: #ffcc66;
+}
+
+.gold-icon {
+  margin-right: 0.5rem;
+}
+
+.gold-amount {
+  font-weight: bold;
+}
+
+.gold-difference {
+  margin-left: 0.5rem;
+  color: #4caf50;
+  font-size: 1.2rem;
+}
+
+.continue-message {
+  margin-top: 2rem;
+  padding: 1rem;
+  background-color: rgba(255, 102, 102, 0.1);
+  border-radius: 6px;
+  color: #ff9999;
+  animation: blink 1.5s infinite;
+}
+
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* --- Responsive Adjustments --- */
+@media (max-width: 992px) {
+  .heart-room {
+    padding: 1rem;
+  }
+
+  .blessing-selection {
+    padding: 1.5rem;
+  }
+
+  .benefits-grid {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  h2 {
+    font-size: 2rem;
+  }
+
+  .benefits-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .heroes-list {
+    grid-template-columns: 1fr;
+  }
+
+  .confirmation-content {
+    width: 95%;
+    padding: 1.5rem;
+  }
+
+  .selected-blessing {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .blessing-icon {
+    margin-right: 0;
+    margin-bottom: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  h2 {
+    font-size: 1.7rem;
+  }
+
+  .heart-room {
+    padding: 0.8rem;
+  }
+
+  .blessing-selection {
+    padding: 1rem;
+  }
+
+  .benefit-option {
+    padding: 1rem;
+  }
+
+  .confirmation-buttons {
+    flex-direction: column;
+  }
+
+  .cancel-button {
+    margin-bottom: 1rem;
+  }
+}

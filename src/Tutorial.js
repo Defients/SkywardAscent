@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import "../styles/Tutorial.css";
+import "./styles/Tutorial.css";
 
 // Import tutorial assets
 const tutorialImages = {
-  setup: "/assets/images/tutorial/setup_tutorial.png",
-  classes: "/assets/images/tutorial/classes_tutorial.png",
-  combat: "/assets/images/tutorial/combat_tutorial.png",
-  rooms: "/assets/images/tutorial/rooms_tutorial.png",
-  weapons: "/assets/images/tutorial/weapons_tutorial.png",
-  merchant: "/assets/images/tutorial/merchant_tutorial.png",
-  cards: "/assets/images/tutorial/cards_tutorial.png",
-  heartRoom: "/assets/images/tutorial/heart_room_tutorial.png",
+  setup: `${process.env.PUBLIC_URL}/assets/images/tutorial/setup_tutorial.png`,
+  classes: `${process.env.PUBLIC_URL}/assets/images/tutorial/classes_tutorial.png`,
+  combat: `${process.env.PUBLIC_URL}/assets/images/tutorial/combat_tutorial.png`,
+  rooms: `${process.env.PUBLIC_URL}/assets/images/tutorial/rooms_tutorial.png`,
+  weapons: `${process.env.PUBLIC_URL}/assets/images/tutorial/weapons_tutorial.png`,
+  merchant: `${process.env.PUBLIC_URL}/assets/images/tutorial/merchant_tutorial.png`,
+  cards: `${process.env.PUBLIC_URL}/assets/images/tutorial/cards_tutorial.png`,
+  heartRoom: `${process.env.PUBLIC_URL}/assets/images/tutorial/heart_room_tutorial.png`,
 };
 
 // Define tutorial sections

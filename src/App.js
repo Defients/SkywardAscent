@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { GameProvider } from "./GameContext";
+import { GameProvider } from "./contexts/GameContext";
 import SetupPhase from "./SetupPhase";
 import AdventureSetup from "./AdventureSetup";
 import WeaponChest from "./WeaponChest";

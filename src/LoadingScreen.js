@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import "../styles/LoadingScreen.css"; // Using the existing CSS file
+import "./styles/LoadingScreen.css"; // Using the existing CSS file
 
 const LoadingScreen = ({ previousPhase, progress = 0 }) => {
   const [tip, setTip] = useState("");

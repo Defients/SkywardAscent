@@ -1,443 +1,441 @@
 /* GameMenu.css */
 .game-menu {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: #16213e;
-    background-image: url('../assets/images/backgrounds/menu_background.png');
-    background-size: cover;
-    background-position: center;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    overflow: hidden;
-    transition: background-position 0.3s ease-out;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #16213e;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  transition: background-position 0.3s ease-out;
+}
+
+.menu-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(10, 15, 30, 0.7);
+  z-index: -1;
+}
+
+.stars-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  opacity: 0.5;
+  z-index: -1;
+  animation: twinkle 10s infinite linear;
+}
+
+.menu-container {
+  width: 100%;
+  max-width: 800px;
+  max-height: 90vh;
+  z-index: 1;
+  perspective: 1000px;
+}
+
+/* Main Menu Styles */
+.main-menu {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem;
+}
+
+.menu-logo {
+  margin-bottom: 3rem;
+}
+
+.menu-logo img {
+  max-width: 100%;
+  height: auto;
+}
+
+.text-logo {
+  font-size: 5rem;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 2rem;
+  text-shadow: 0 0 20px rgba(0, 168, 204, 0.5);
+}
+
+.logo-sky {
+  color: #00a8cc;
+}
+
+.logo-ward {
+  color: #f0f0f0;
+}
+
+.logo-ascent {
+  color: #e63946;
+}
+
+.menu-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+  max-width: 300px;
+}
+
+.menu-button {
+  padding: 1rem 2rem;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #e6e6e6;
+  background-color: rgba(15, 52, 96, 0.8);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.menu-button:hover {
+  background-color: rgba(39, 93, 173, 0.8);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+.menu-button:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.menu-button.primary {
+  background-color: rgba(0, 168, 204, 0.8);
+}
+
+.menu-button.primary:hover {
+  background-color: rgba(0, 198, 234, 0.8);
+}
+
+.menu-button.disabled {
+  background-color: rgba(58, 58, 90, 0.8);
+  cursor: not-allowed;
+  color: #a0a0a0;
+}
+
+.menu-button.disabled:hover {
+  transform: none;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.menu-footer {
+  margin-top: 3rem;
+  text-align: center;
+  color: #a0a0a0;
+  font-size: 0.9rem;
+}
+
+.menu-footer p {
+  margin: 0.3rem 0;
+}
+
+/* Settings Menu Styles */
+.settings-menu {
+  background-color: rgba(22, 33, 62, 0.9);
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+  color: #e6e6e6;
+}
+
+.settings-menu h2 {
+  font-size: 2rem;
+  margin-top: 0;
+  margin-bottom: 2rem;
+  text-align: center;
+  color: #00a8cc;
+  text-shadow: 0 0 10px rgba(0, 168, 204, 0.3);
+}
+
+.settings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.setting-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.setting-label {
+  font-size: 1.1rem;
+}
+
+/* Toggle switch */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #3a3a5a;
+  transition: 0.3s;
+  border-radius: 34px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: #e6e6e6;
+  transition: 0.3s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: #00a8cc;
+}
+
+input:checked + .slider:before {
+  transform: translateX(26px);
+}
+
+.settings-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.settings-button {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  color: #e6e6e6;
+  background-color: #0f3460;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex: 1;
+}
+
+.settings-button:hover {
+  background-color: #275dad;
+}
+
+.settings-button.save {
+  background-color: #2a9d8f;
+}
+
+.settings-button.save:hover {
+  background-color: #3ab7a8;
+}
+
+.settings-button.reset {
+  background-color: #e63946;
+}
+
+.settings-button.reset:hover {
+  background-color: #f25b67;
+}
+
+/* Credits Overlay */
+.credits-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(10, 15, 30, 0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+}
+
+.credits-content {
+  background-color: #16213e;
+  width: 90%;
+  max-width: 600px;
+  max-height: 80vh;
+  overflow-y: auto;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  position: relative;
+}
+
+.credits-content h2 {
+  font-size: 2rem;
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  color: #00a8cc;
+  text-shadow: 0 0 10px rgba(0, 168, 204, 0.3);
+}
+
+.credits-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.credits-section h3 {
+  font-size: 1.3rem;
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  color: #00a8cc;
+}
+
+.credits-section p {
+  margin: 0.3rem 0;
+  color: #e6e6e6;
+}
+
+.close-credits {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  color: #e6e6e6;
+  font-size: 1.2rem;
+  cursor: pointer;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.close-credits:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Confirmation Dialog */
+.confirmation-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(10, 15, 30, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 20;
+}
+
+.confirmation-dialog {
+  background-color: #16213e;
+  border-radius: 12px;
+  padding: 2rem;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  text-align: center;
+}
+
+.confirmation-dialog h3 {
+  font-size: 1.5rem;
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: #e63946;
+}
+
+.confirmation-dialog p {
+  margin-bottom: 2rem;
+  color: #e6e6e6;
+}
+
+.confirmation-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.confirmation-buttons button {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  color: #e6e6e6;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.confirm-button {
+  background-color: #e63946;
+}
+
+.confirm-button:hover {
+  background-color: #f25b67;
+}
+
+.cancel-button {
+  background-color: #3a3a5a;
+}
+
+.cancel-button:hover {
+  background-color: #4c4c76;
+}
+
+/* Animation keyframes */
+@keyframes twinkle {
+  0% {
+    opacity: 0.3;
   }
-  
-  .menu-background {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(10, 15, 30, 0.7);
-    z-index: -1;
-  }
-  
-  .stars-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-image: url('../assets/images/effects/stars.png');
-    background-size: cover;
+  50% {
     opacity: 0.5;
-    z-index: -1;
-    animation: twinkle 10s infinite linear;
   }
-  
-  .menu-container {
-    width: 100%;
-    max-width: 800px;
-    max-height: 90vh;
-    z-index: 1;
-    perspective: 1000px;
+  100% {
+    opacity: 0.3;
   }
-  
-  /* Main Menu Styles */
-  .main-menu {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 2rem;
-  }
-  
-  .menu-logo {
-    margin-bottom: 3rem;
-  }
-  
-  .menu-logo img {
-    max-width: 100%;
-    height: auto;
-  }
-  
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
   .text-logo {
-    font-size: 5rem;
-    font-weight: bold;
-    text-align: center;
-    margin-bottom: 2rem;
-    text-shadow: 0 0 20px rgba(0, 168, 204, 0.5);
+    font-size: 3.5rem;
   }
-  
-  .logo-sky {
-    color: #00a8cc;
-  }
-  
-  .logo-ward {
-    color: #f0f0f0;
-  }
-  
-  .logo-ascent {
-    color: #e63946;
-  }
-  
-  .menu-buttons {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    width: 100%;
-    max-width: 300px;
-  }
-  
+
   .menu-button {
-    padding: 1rem 2rem;
-    font-size: 1.2rem;
-    font-weight: bold;
-    color: #e6e6e6;
-    background-color: rgba(15, 52, 96, 0.8);
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-  }
-  
-  .menu-button:hover {
-    background-color: rgba(39, 93, 173, 0.8);
-    transform: translateY(-3px);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
-  }
-  
-  .menu-button:active {
-    transform: translateY(1px);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-  }
-  
-  .menu-button.primary {
-    background-color: rgba(0, 168, 204, 0.8);
-  }
-  
-  .menu-button.primary:hover {
-    background-color: rgba(0, 198, 234, 0.8);
-  }
-  
-  .menu-button.disabled {
-    background-color: rgba(58, 58, 90, 0.8);
-    cursor: not-allowed;
-    color: #a0a0a0;
-  }
-  
-  .menu-button.disabled:hover {
-    transform: none;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-  }
-  
-  .menu-footer {
-    margin-top: 3rem;
-    text-align: center;
-    color: #a0a0a0;
-    font-size: 0.9rem;
-  }
-  
-  .menu-footer p {
-    margin: 0.3rem 0;
-  }
-  
-  /* Settings Menu Styles */
-  .settings-menu {
-    background-color: rgba(22, 33, 62, 0.9);
-    border-radius: 12px;
-    padding: 2rem;
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
-    color: #e6e6e6;
-  }
-  
-  .settings-menu h2 {
-    font-size: 2rem;
-    margin-top: 0;
-    margin-bottom: 2rem;
-    text-align: center;
-    color: #00a8cc;
-    text-shadow: 0 0 10px rgba(0, 168, 204, 0.3);
-  }
-  
-  .settings-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    margin-bottom: 2rem;
-  }
-  
-  .setting-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  
-  .setting-label {
+    padding: 0.75rem 1.5rem;
     font-size: 1.1rem;
   }
-  
-  /* Toggle switch */
-  .switch {
-    position: relative;
-    display: inline-block;
-    width: 60px;
-    height: 34px;
+
+  .credits-content,
+  .settings-menu {
+    padding: 1.5rem;
   }
-  
-  .switch input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-  }
-  
-  .slider {
-    position: absolute;
-    cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: #3a3a5a;
-    transition: 0.3s;
-    border-radius: 34px;
-  }
-  
-  .slider:before {
-    position: absolute;
-    content: "";
-    height: 26px;
-    width: 26px;
-    left: 4px;
-    bottom: 4px;
-    background-color: #e6e6e6;
-    transition: 0.3s;
-    border-radius: 50%;
-  }
-  
-  input:checked + .slider {
-    background-color: #00a8cc;
-  }
-  
-  input:checked + .slider:before {
-    transform: translateX(26px);
-  }
-  
-  .settings-actions {
-    display: flex;
-    justify-content: space-between;
-    gap: 1rem;
-  }
-  
-  .settings-button {
-    padding: 0.75rem 1.5rem;
-    font-size: 1rem;
-    color: #e6e6e6;
-    background-color: #0f3460;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    flex: 1;
-  }
-  
-  .settings-button:hover {
-    background-color: #275dad;
-  }
-  
-  .settings-button.save {
-    background-color: #2a9d8f;
-  }
-  
-  .settings-button.save:hover {
-    background-color: #3ab7a8;
-  }
-  
-  .settings-button.reset {
-    background-color: #e63946;
-  }
-  
-  .settings-button.reset:hover {
-    background-color: #f25b67;
-  }
-  
-  /* Credits Overlay */
-  .credits-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(10, 15, 30, 0.85);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 10;
-  }
-  
-  .credits-content {
-    background-color: #16213e;
-    width: 90%;
-    max-width: 600px;
-    max-height: 80vh;
-    overflow-y: auto;
-    border-radius: 12px;
-    padding: 2rem;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-    position: relative;
-  }
-  
-  .credits-content h2 {
-    font-size: 2rem;
-    margin-top: 0;
-    margin-bottom: 1.5rem;
-    text-align: center;
-    color: #00a8cc;
-    text-shadow: 0 0 10px rgba(0, 168, 204, 0.3);
-  }
-  
-  .credits-sections {
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
-  }
-  
-  .credits-section h3 {
-    font-size: 1.3rem;
-    margin-top: 0;
-    margin-bottom: 0.5rem;
-    color: #00a8cc;
-  }
-  
-  .credits-section p {
-    margin: 0.3rem 0;
-    color: #e6e6e6;
-  }
-  
-  .close-credits {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-    background: none;
-    border: none;
-    color: #e6e6e6;
-    font-size: 1.2rem;
-    cursor: pointer;
-    width: 36px;
-    height: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    transition: all 0.2s ease;
-  }
-  
-  .close-credits:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-  }
-  
-  /* Confirmation Dialog */
-  .confirmation-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(10, 15, 30, 0.7);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 20;
-  }
-  
+
   .confirmation-dialog {
-    background-color: #16213e;
-    border-radius: 12px;
-    padding: 2rem;
-    width: 90%;
-    max-width: 400px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-    text-align: center;
+    padding: 1.5rem;
   }
-  
-  .confirmation-dialog h3 {
-    font-size: 1.5rem;
-    margin-top: 0;
-    margin-bottom: 1rem;
-    color: #e63946;
-  }
-  
-  .confirmation-dialog p {
-    margin-bottom: 2rem;
-    color: #e6e6e6;
-  }
-  
-  .confirmation-buttons {
-    display: flex;
-    justify-content: center;
-    gap: 1rem;
-  }
-  
-  .confirmation-buttons button {
-    padding: 0.75rem 1.5rem;
-    font-size: 1rem;
-    color: #e6e6e6;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-  
-  .confirm-button {
-    background-color: #e63946;
-  }
-  
-  .confirm-button:hover {
-    background-color: #f25b67;
-  }
-  
-  .cancel-button {
-    background-color: #3a3a5a;
-  }
-  
-  .cancel-button:hover {
-    background-color: #4c4c76;
-  }
-  
-  /* Animation keyframes */
-  @keyframes twinkle {
-    0% {
-      opacity: 0.3;
-    }
-    50% {
-      opacity: 0.5;
-    }
-    100% {
-      opacity: 0.3;
-    }
-  }
-  
-  /* Responsive adjustments */
-  @media (max-width: 768px) {
-    .text-logo {
-      font-size: 3.5rem;
-    }
-    
-    .menu-button {
-      padding: 0.75rem 1.5rem;
-      font-size: 1.1rem;
-    }
-    
-    .credits-content,
-    .settings-menu {
-      padding: 1.5rem;
-    }
-    
-    .confirmation-dialog {
-      padding: 1.5rem;
-    }
-  }
+}

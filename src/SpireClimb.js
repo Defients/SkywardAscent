@@ -1,19 +1,74 @@
 import React, { useState, useEffect, useRef } from "react";
-import { TIERS, HEART_ROOM_EFFECTS } from "../contexts/GameContext";
+import { TIERS, HEART_ROOM_EFFECTS } from "./contexts/GameContext";
 import HeartRoom from "./HeartRoom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Tooltip } from "react-tooltip";
-import "../styles/SpireClimb.css";
+import "./styles/SpireClimb.css";
 
-// Import images
-import diamondRoomImg from "../assets/images/rooms/diamond_room.png";
-import clubRoomImg from "../assets/images/rooms/club_room.png";
-import heartRoomImg from "../assets/images/rooms/heart_room.png";
-import spadeRoomImg from "../assets/images/rooms/spade_room.png";
-import spadeEliteRoomImg from "../assets/images/rooms/spade_elite_room.png";
-import finalBossRoomImg from "../assets/images/rooms/final_boss_room.png";
-import fogImg from "../assets/images/rooms/fog.png";
-import compassImg from "../assets/images/items/compass.png";
+// Import placeholder utilities
+import PlaceholderUtils from "./PlaceholderUtils";
+
+// Create placeholder images for assets (since we can't directly access the assets)
+const createPlaceholder = (name, width = 200, height = 150) => {
+  return PlaceholderUtils.createPlaceholder(name, width, height);
+};
+
+// Create placeholder images
+const diamondRoomImg = createPlaceholder("Diamond Room", 320, 200);
+const clubRoomImg = createPlaceholder("Club Room", 320, 200);
+const heartRoomImg = createPlaceholder("Heart Room", 320, 200);
+const spadeRoomImg = createPlaceholder("Spade Room", 320, 200);
+const spadeEliteRoomImg = createPlaceholder("Elite Spade Room", 320, 200);
+const finalBossRoomImg = createPlaceholder("Final Boss Room", 320, 200);
+const fogImg = createPlaceholder("Fog", 100, 100);
+const compassImg = createPlaceholder("Compass", 32, 32);
+
+// Room mapping for images and descriptions
+const ROOM_DATA = {
+  diamond: {
+    name: "Merchant",
+    description: "Purchase items, weapons, and services with your gold.",
+    icon: "♦️",
+    image: diamondRoomImg,
+    color: "#e74c3c",
+  },
+  club: {
+    name: "Monster",
+    description: "Battle a standard monster for gold and experience.",
+    icon: "♣️",
+    image: clubRoomImg,
+    color: "#2ecc71",
+  },
+  heart: {
+    name: "Blessing",
+    description: "Choose one of several beneficial effects for your party.",
+    icon: "❤️",
+    image: heartRoomImg,
+    color: "#e74c3c",
+  },
+  spade: {
+    name: "Elite Monster",
+    description: "Face a stronger monster for better rewards.",
+    icon: "♠️",
+    image: spadeRoomImg,
+    color: "#34495e",
+  },
+  "spade+": {
+    name: "Mini-Boss",
+    description:
+      "A challenging battle against a powerful foe with exceptional rewards.",
+    icon: "♠️+",
+    image: spadeEliteRoomImg,
+    color: "#34495e",
+  },
+  final_boss: {
+    name: "Final Boss",
+    description: "The ultimate confrontation with Apexus, the Astral Overlord.",
+    icon: "👑",
+    image: finalBossRoomImg,
+    color: "#9b59b6",
+  },
+};
 
 const SpireClimb = ({
   gameData,
@@ -22,121 +77,197 @@ const SpireClimb = ({
   onSaveGame,
   playSound,
 }) => {
+  // State for path and progression
   const [currentTierPath, setCurrentTierPath] = useState([]);
   const [currentRoomIndex, setCurrentRoomIndex] = useState(0);
-  const [showingHeartRoom, setShowingHeartRoom] = useState(false);
   const [selectedPath, setSelectedPath] = useState(null);
-  const [message, setMessage] = useState("");
-  const [roomIcons, setRoomIcons] = useState({});
   const [pathPosition, setPathPosition] = useState(0);
   const [pathAnimation, setPathAnimation] = useState(false);
+  const [revealedRooms, setRevealedRooms] = useState([]);
+  const [fogOfWar, setFogOfWar] = useState(true);
+
+  // UI state
+  const [message, setMessage] = useState("");
   const [showRoomPreview, setShowRoomPreview] = useState(false);
   const [previewRoom, setPreviewRoom] = useState(null);
-  const [partyStatus, setPartyStatus] = useState(null);
   const [showInventory, setShowInventory] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
-  const [fogOfWar, setFogOfWar] = useState(true);
-  const [revealedRooms, setRevealedRooms] = useState([]);
+  const [roomIcons, setRoomIcons] = useState({});
+  const [partyStatus, setPartyStatus] = useState(null);
+
+  // Special states
+  const [showingHeartRoom, setShowingHeartRoom] = useState(false);
   const [showTierCompletion, setShowTierCompletion] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [notifications, setNotifications] = useState([]);
+  const [showTips, setShowTips] = useState(false);
+  const [currentTip, setCurrentTip] = useState(0);
+
+  // Animation states
+  const [roomEnterAnimation, setRoomEnterAnimation] = useState(false);
+  const [pathRevealAnimation, setPathRevealAnimation] = useState(false);
+  const [heroStatusAnimation, setHeroStatusAnimation] = useState(false);
 
   // Refs
   const pathRef = useRef(null);
-
-  // Room images mapping
-  const roomImages = {
-    diamond: diamondRoomImg,
-    club: clubRoomImg,
-    heart: heartRoomImg,
-    spade: spadeRoomImg,
-    "spade+": spadeEliteRoomImg,
-    final_boss: finalBossRoomImg,
-  };
+  const tierProgressRef = useRef(null);
 
   // Initialize when component mounts or tier changes
   useEffect(() => {
-    initializeTierPath();
+    try {
+      setIsLoading(true);
+      initializeTierPath();
+      updatePartyStatus();
 
-    // Initialize party status
-    updatePartyStatus();
+      // Handle tier transitions
+      if (
+        gameData.previousTier &&
+        gameData.currentTier > gameData.previousTier
+      ) {
+        setShowTierCompletion(true);
+        setTimeout(() => {
+          setShowTierCompletion(false);
+        }, 5000); // Show completion screen for 5 seconds
+      }
 
-    // If tier is changed, show tier completion animation
-    if (gameData.previousTier && gameData.currentTier > gameData.previousTier) {
-      setShowTierCompletion(true);
-      setTimeout(() => {
-        setShowTierCompletion(false);
-      }, 3000);
+      setIsLoading(false);
+    } catch (err) {
+      console.error("Error initializing spire climb:", err);
+      setError("Failed to initialize the spire. Please try again.");
+      setIsLoading(false);
     }
   }, [gameData.currentTier]);
 
+  // Tips rotation
+  useEffect(() => {
+    const tipsList = [
+      "💡 Different room types offer different rewards and challenges!",
+      "💡 Heart rooms can heal your party or provide powerful buffs.",
+      "💡 Save your strongest heroes for elite monster rooms (♠️).",
+      "💡 Use the compass to reveal the path ahead when planning your route.",
+      "💡 Don't forget to visit merchants to spend your hard-earned gold!",
+      "💡 Your party's health status affects combat performance.",
+      "💡 Each tier of the spire is more challenging than the last.",
+      "💡 When choosing paths, consider your party's current health and capabilities.",
+    ];
+
+    if (showTips) {
+      const interval = setInterval(() => {
+        setCurrentTip((prev) => (prev + 1) % tipsList.length);
+      }, 10000);
+
+      return () => clearInterval(interval);
+    }
+  }, [showTips]);
+
   // Update party status
   const updatePartyStatus = () => {
-    const aliveHeroes = gameData.heroes.filter((hero) => hero.health > 0);
-    const totalHealth = aliveHeroes.reduce(
-      (total, hero) => total + hero.health,
-      0
-    );
-    const maxHealth = aliveHeroes.reduce(
-      (total, hero) => total + hero.maxHealth,
-      0
-    );
-    const healthPercentage =
-      maxHealth > 0 ? (totalHealth / maxHealth) * 100 : 0;
+    try {
+      const aliveHeroes = gameData.heroes.filter((hero) => hero.health > 0);
+      const totalHealth = aliveHeroes.reduce(
+        (total, hero) => total + hero.health,
+        0
+      );
+      const maxHealth = aliveHeroes.reduce(
+        (total, hero) => total + hero.maxHealth,
+        0
+      );
+      const healthPercentage =
+        maxHealth > 0 ? (totalHealth / maxHealth) * 100 : 0;
 
-    let status;
-    if (healthPercentage >= 80) {
-      status = { text: "Excellent", color: "#4caf50" };
-    } else if (healthPercentage >= 60) {
-      status = { text: "Good", color: "#8bc34a" };
-    } else if (healthPercentage >= 40) {
-      status = { text: "Fair", color: "#ffc107" };
-    } else if (healthPercentage >= 20) {
-      status = { text: "Poor", color: "#ff9800" };
-    } else {
-      status = { text: "Critical", color: "#f44336" };
+      let status;
+      if (healthPercentage >= 80) {
+        status = { text: "Excellent", color: "#4caf50" };
+      } else if (healthPercentage >= 60) {
+        status = { text: "Good", color: "#8bc34a" };
+      } else if (healthPercentage >= 40) {
+        status = { text: "Fair", color: "#ffc107" };
+      } else if (healthPercentage >= 20) {
+        status = { text: "Poor", color: "#ff9800" };
+      } else {
+        status = { text: "Critical", color: "#f44336" };
+      }
+
+      // Trigger animation when status changes
+      if (partyStatus && partyStatus.status?.text !== status.text) {
+        setHeroStatusAnimation(true);
+        setTimeout(() => setHeroStatusAnimation(false), 1000);
+      }
+
+      setPartyStatus({
+        aliveCount: aliveHeroes.length,
+        totalHealth,
+        maxHealth,
+        healthPercentage,
+        status,
+      });
+    } catch (err) {
+      console.error("Error updating party status:", err);
     }
-
-    setPartyStatus({
-      aliveCount: aliveHeroes.length,
-      totalHealth,
-      maxHealth,
-      healthPercentage,
-      status,
-    });
   };
 
   // Set up the path for the current tier
   const initializeTierPath = () => {
-    const tierPath = TIERS[gameData.currentTier];
-    if (!tierPath) {
-      // Game completed
-      setMessage("You have reached the end of the spire!");
-      onComplete({ gameCompleted: true });
-      return;
-    }
-
-    // Generate room icons
-    const icons = {};
-    tierPath.forEach((room, index) => {
-      if (Array.isArray(room)) {
-        // For each path choice, create an icon
-        room.forEach((pathRoom, pathIndex) => {
-          icons[`${index}-${pathIndex}`] = getRoomIcon(pathRoom);
-        });
-      } else {
-        icons[index] = getRoomIcon(room);
+    try {
+      const tierPath = TIERS[gameData.currentTier];
+      if (!tierPath) {
+        // Game completed
+        setMessage("You have reached the end of the spire!");
+        onComplete({ gameCompleted: true });
+        return;
       }
-    });
 
-    setRoomIcons(icons);
-    setCurrentTierPath(tierPath);
-    setCurrentRoomIndex(0);
-    setMessage(
-      `Tier ${gameData.currentTier}: ${getTierName(gameData.currentTier)}`
-    );
+      // Generate room icons
+      const icons = {};
+      tierPath.forEach((room, index) => {
+        if (Array.isArray(room)) {
+          // For each path choice, create an icon
+          room.forEach((pathRoom, pathIndex) => {
+            icons[`${index}-${pathIndex}`] = getRoomIcon(pathRoom);
+          });
+        } else {
+          icons[index] = getRoomIcon(room);
+        }
+      });
 
-    // Initialize revealed rooms
-    // Initially reveal only the first few rooms
-    setRevealedRooms([0, 1]);
+      setRoomIcons(icons);
+      setCurrentTierPath(tierPath);
+      setCurrentRoomIndex(0);
+      setMessage(
+        `Tier ${gameData.currentTier}: ${getTierName(gameData.currentTier)}`
+      );
+
+      // Initialize revealed rooms - show first few rooms
+      setRevealedRooms([0, 1]);
+      setPathRevealAnimation(true);
+      setTimeout(() => setPathRevealAnimation(false), 1500);
+
+      // Show tips for new players
+      if (gameData.currentTier === 1) {
+        setShowTips(true);
+      }
+
+      // Add welcome notification
+      addNotification(
+        `Welcome to ${getTierName(gameData.currentTier)}!`,
+        "info"
+      );
+    } catch (err) {
+      console.error("Error initializing tier path:", err);
+      setError("Failed to generate the spire path. Please try again.");
+    }
+  };
+
+  // Add a notification
+  const addNotification = (text, type = "info") => {
+    const id = Date.now();
+    setNotifications((prev) => [...prev, { id, text, type }]);
+
+    // Auto-remove after delay
+    setTimeout(() => {
+      setNotifications((prev) => prev.filter((n) => n.id !== id));
+    }, 5000);
   };
 
   // Get tier name based on current tier
@@ -171,6 +302,8 @@ const SpireClimb = ({
 
     // Animate path selection
     setPathAnimation(true);
+    addNotification(`Path selected: ${getRoomName(selectedRoom)}`, "success");
+
     setTimeout(() => {
       setPathAnimation(false);
       // Move to the room
@@ -182,6 +315,10 @@ const SpireClimb = ({
   const proceedToRoom = () => {
     // Play sound effect
     if (playSound) playSound();
+
+    // Animate room entry
+    setRoomEnterAnimation(true);
+    setTimeout(() => setRoomEnterAnimation(false), 1000);
 
     // If at the end of the tier, move to next tier
     if (currentRoomIndex >= currentTierPath.length) {
@@ -195,6 +332,11 @@ const SpireClimb = ({
         health: hero.maxHealth,
         isTapped: false,
       }));
+
+      addNotification(
+        `Tier ${gameData.currentTier} completed! All heroes fully healed.`,
+        "success"
+      );
 
       onComplete({
         heroes: updatedHeroes,
@@ -218,6 +360,9 @@ const SpireClimb = ({
 
     // Handle heart room separately
     if (currentRoom === "heart") {
+      setMessage(
+        "You've entered a Heart Room. Choose a blessing for your party."
+      );
       setShowingHeartRoom(true);
       return;
     }
@@ -226,6 +371,11 @@ const SpireClimb = ({
     if (currentRoom === "final_boss") {
       setMessage("The final confrontation awaits...");
       // Show special animation or confirmation
+      addNotification(
+        "Prepare for the ultimate battle with Apexus, the Astral Overlord!",
+        "warning"
+      );
+
       setTimeout(() => {
         onEnterRoom("final_boss");
       }, 2000);
@@ -246,6 +396,10 @@ const SpireClimb = ({
       nextRoomIndexes.push(currentRoomIndex + 2);
     }
 
+    // Apply reveal animation to newly revealed rooms
+    setPathRevealAnimation(true);
+    setTimeout(() => setPathRevealAnimation(false), 1500);
+
     setRevealedRooms([...new Set([...revealedRooms, ...nextRoomIndexes])]);
   };
 
@@ -255,66 +409,25 @@ const SpireClimb = ({
     if (playSound) playSound();
 
     setFogOfWar(!fogOfWar);
+    addNotification(
+      fogOfWar ? "Map fully revealed!" : "Fog of war enabled",
+      "info"
+    );
   };
 
   // Get a friendly name for room types
   const getRoomName = (roomType) => {
-    switch (roomType) {
-      case "diamond":
-        return "Merchant";
-      case "club":
-        return "Monster";
-      case "heart":
-        return "Blessing";
-      case "spade":
-        return "Elite Monster";
-      case "spade+":
-        return "Mini-Boss";
-      case "final_boss":
-        return "Final Boss";
-      default:
-        return roomType;
-    }
+    return ROOM_DATA[roomType]?.name || roomType;
   };
 
   // Get an icon for room types
   const getRoomIcon = (roomType) => {
-    switch (roomType) {
-      case "diamond":
-        return "♦️";
-      case "club":
-        return "♣️";
-      case "heart":
-        return "❤️";
-      case "spade":
-        return "♠️";
-      case "spade+":
-        return "♠️+";
-      case "final_boss":
-        return "👑";
-      default:
-        return "❓";
-    }
+    return ROOM_DATA[roomType]?.icon || "❓";
   };
 
   // Get room description for hovering
   const getRoomDescription = (roomType) => {
-    switch (roomType) {
-      case "diamond":
-        return "Merchant Room: Purchase items, weapons, and services with your gold.";
-      case "club":
-        return "Monster Room: Battle a standard monster for gold and experience.";
-      case "heart":
-        return "Blessing Room: Choose one of several beneficial effects for your party.";
-      case "spade":
-        return "Elite Monster Room: Face a stronger monster for better rewards.";
-      case "spade+":
-        return "Mini-Boss Room: A challenging battle against a powerful foe with exceptional rewards.";
-      case "final_boss":
-        return "Final Boss: The ultimate confrontation with Apexus, the Astral Overlord.";
-      default:
-        return "Unknown room type.";
-    }
+    return ROOM_DATA[roomType]?.description || "Unknown room type.";
   };
 
   // Show preview of a room
@@ -369,12 +482,35 @@ const SpireClimb = ({
   };
 
   // Handle heart room completion
-  const handleHeartRoomComplete = (benefits) => {
+  const handleHeartRoomComplete = (updates) => {
     // Apply heart room benefits
     setShowingHeartRoom(false);
 
-    // Update heroes or game state based on benefits
-    // This would depend on what was selected in the HeartRoom
+    // Add notification based on what happened in the heart room
+    if (updates.heroes) {
+      // Check what was updated
+      if (
+        gameData.heroes.some((h, i) => h.health !== updates.heroes[i].health)
+      ) {
+        addNotification("Hearts restored with the blessing!", "success");
+      }
+    }
+
+    if (updates.gold && updates.gold > gameData.gold) {
+      addNotification(
+        `Gained ${
+          updates.gold - gameData.gold
+        } gold from the heart room blessing!`,
+        "success"
+      );
+    }
+
+    if (updates.rollBuff) {
+      addNotification(
+        "All future dice rolls will be enhanced by +1!",
+        "success"
+      );
+    }
 
     // Move to next room
     continueToNextRoom();
@@ -388,6 +524,7 @@ const SpireClimb = ({
     // Call parent save function
     if (onSaveGame) {
       onSaveGame();
+      addNotification("Game saved successfully!", "success");
     }
 
     // Close menu
@@ -408,6 +545,29 @@ const SpireClimb = ({
     }
   };
 
+  // If showing loading
+  if (isLoading) {
+    return (
+      <div className="spire-loading">
+        <div className="loading-spinner"></div>
+        <div className="loading-text">Mapping the Astral Spire...</div>
+      </div>
+    );
+  }
+
+  // If there's an error
+  if (error) {
+    return (
+      <div className="spire-error">
+        <div className="error-icon">⚠️</div>
+        <div className="error-message">{error}</div>
+        <button onClick={initializeTierPath} className="retry-button">
+          Try Again
+        </button>
+      </div>
+    );
+  }
+
   // If showing heart room
   if (showingHeartRoom) {
     return (
@@ -427,7 +587,7 @@ const SpireClimb = ({
           className="completion-content"
           initial={{ scale: 0.5, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: 0.8, type: "spring" }}
         >
           <h2>Tier {gameData.currentTier - 1} Completed!</h2>
           <div className="tier-rewards">
@@ -439,10 +599,44 @@ const SpireClimb = ({
               <span className="reward-icon">🏆</span>
               <span className="reward-text">Progress saved</span>
             </div>
+            <div className="reward">
+              <span className="reward-icon">🌟</span>
+              <span className="reward-text">Experience gained</span>
+            </div>
           </div>
           <div className="next-tier">
             <h3>Entering {getTierName(gameData.currentTier)}</h3>
             <p>Prepare for greater challenges and rewards...</p>
+
+            <motion.div
+              className="tier-facts"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1, duration: 0.5 }}
+            >
+              <div className="tier-fact">
+                <span className="fact-icon">⚔️</span>
+                <span className="fact-text">Monsters will be stronger</span>
+              </div>
+              <div className="tier-fact">
+                <span className="fact-icon">💰</span>
+                <span className="fact-text">Rewards will be more valuable</span>
+              </div>
+              <div className="tier-fact">
+                <span className="fact-icon">🧠</span>
+                <span className="fact-text">Strategy becomes more crucial</span>
+              </div>
+            </motion.div>
+
+            <motion.button
+              className="continue-button"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 3, duration: 0.5 }}
+              onClick={() => setShowTierCompletion(false)}
+            >
+              Begin Ascent
+            </motion.button>
           </div>
         </motion.div>
       </div>
@@ -452,14 +646,75 @@ const SpireClimb = ({
   // Render the spire climb interface
   return (
     <div className="spire-climb">
+      {/* Notifications area */}
+      <div className="notifications-area">
+        <AnimatePresence>
+          {notifications.map((notification) => (
+            <motion.div
+              key={notification.id}
+              className={`notification ${notification.type}`}
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 50 }}
+              transition={{ duration: 0.3 }}
+            >
+              <span className="notification-icon">
+                {notification.type === "success"
+                  ? "✅"
+                  : notification.type === "warning"
+                  ? "⚠️"
+                  : notification.type === "error"
+                  ? "❌"
+                  : "ℹ️"}
+              </span>
+              <span className="notification-text">{notification.text}</span>
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      </div>
+
       <div className="spire-header">
         <h2>The Astral Spire - {getTierName(gameData.currentTier)}</h2>
         <div className="spire-message">{message}</div>
       </div>
 
+      {/* Tips section */}
+      <AnimatePresence>
+        {showTips && (
+          <motion.div
+            className="tips-container"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            transition={{ duration: 0.3 }}
+          >
+            <div className="tip-content">
+              {/* Dynamically rendered current tip */}
+              <motion.div
+                key={currentTip}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.5 }}
+                className="current-tip"
+              >
+                {/* This would show the current tip from our tips array */}
+              </motion.div>
+            </div>
+            <button
+              className="close-tips"
+              onClick={() => setShowTips(false)}
+              aria-label="Close tips"
+            >
+              ✕
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Top controls & info bar */}
       <div className="spire-controls">
-        <div className="tier-progress">
+        <div className="tier-progress" ref={tierProgressRef}>
           <div className="progress-bar">
             <div
               className="progress-fill"
@@ -479,6 +734,7 @@ const SpireClimb = ({
             onClick={toggleFogOfWar}
             data-tooltip-id="spire-tooltip"
             data-tooltip-content="Toggle Fog of War"
+            aria-label={fogOfWar ? "Show all rooms" : "Enable fog of war"}
           >
             <img src={compassImg} alt="Toggle Fog" className="compass-icon" />
           </button>
@@ -488,6 +744,7 @@ const SpireClimb = ({
             onClick={() => setShowInventory(!showInventory)}
             data-tooltip-id="spire-tooltip"
             data-tooltip-content="View Inventory"
+            aria-label="View inventory"
           >
             🎒
           </button>
@@ -497,6 +754,7 @@ const SpireClimb = ({
             onClick={() => setShowMenu(!showMenu)}
             data-tooltip-id="spire-tooltip"
             data-tooltip-content="Menu"
+            aria-label="Open menu"
           >
             ≡
           </button>
@@ -504,7 +762,12 @@ const SpireClimb = ({
       </div>
 
       {/* Main path visualization */}
-      <div className="path-visualization" ref={pathRef}>
+      <div
+        className={`path-visualization ${
+          pathRevealAnimation ? "revealing" : ""
+        } ${roomEnterAnimation ? "entering-room" : ""}`}
+        ref={pathRef}
+      >
         <div className={`path-container ${pathAnimation ? "animating" : ""}`}>
           {currentTierPath.map((room, index) => {
             const roomStatus = getRoomStatus(index);
@@ -523,12 +786,14 @@ const SpireClimb = ({
                         whileTap={{ scale: 0.95 }}
                         onMouseEnter={() => handleRoomHover(pathRoom, index)}
                         onMouseLeave={handleRoomLeave}
+                        aria-label={`${getRoomName(pathRoom)} path option`}
                       >
                         <button
                           className={`room-button choice ${pathRoom}`}
                           onClick={() => handlePathSelection(pathIndex)}
                           data-tooltip-id="spire-tooltip"
                           data-tooltip-content={getRoomDescription(pathRoom)}
+                          aria-label={`Select ${getRoomName(pathRoom)} path`}
                         >
                           <div className="room-icon">
                             {roomIcons[`${index}-${pathIndex}`] ||
@@ -538,7 +803,7 @@ const SpireClimb = ({
                             {getRoomName(pathRoom)}
                           </div>
                           <img
-                            src={roomImages[pathRoom] || clubRoomImg}
+                            src={ROOM_DATA[pathRoom]?.image || clubRoomImg}
                             alt={getRoomName(pathRoom)}
                             className="room-image"
                           />
@@ -554,11 +819,28 @@ const SpireClimb = ({
             return (
               <div
                 key={`room-${index}`}
-                className={`path-room ${roomStatus}`}
+                className={`path-room ${roomStatus} ${
+                  pathRevealAnimation &&
+                  revealedRooms.includes(index) &&
+                  roomStatus === "upcoming"
+                    ? "revealing"
+                    : ""
+                }`}
                 onMouseEnter={() =>
                   handleRoomHover(Array.isArray(room) ? "choice" : room, index)
                 }
                 onMouseLeave={handleRoomLeave}
+                aria-label={
+                  Array.isArray(room)
+                    ? "Path Split"
+                    : `${getRoomName(room)} room ${
+                        roomStatus === "completed"
+                          ? "completed"
+                          : roomStatus === "current"
+                          ? "current"
+                          : "upcoming"
+                      }`
+                }
               >
                 {Array.isArray(room) ? (
                   <div className="path-split">
@@ -578,7 +860,7 @@ const SpireClimb = ({
                       </div>
                     ) : (
                       <img
-                        src={roomImages[room] || clubRoomImg}
+                        src={ROOM_DATA[room]?.image || clubRoomImg}
                         alt={getRoomName(room)}
                         className="room-image"
                       />
@@ -598,7 +880,8 @@ const SpireClimb = ({
                     key={`connector-${index}`}
                     className={`path-connector ${
                       index < currentRoomIndex ? "completed" : ""
-                    }`}
+                    } ${index === currentRoomIndex ? "current" : ""}`}
+                    aria-hidden="true"
                   ></div>
                 );
               }
@@ -617,6 +900,8 @@ const SpireClimb = ({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
             transition={{ duration: 0.2 }}
+            role="status"
+            aria-live="polite"
           >
             <div className="preview-header">
               <div className="preview-icon">{getRoomIcon(previewRoom)}</div>
@@ -625,12 +910,32 @@ const SpireClimb = ({
             <p className="preview-description">
               {getRoomDescription(previewRoom)}
             </p>
+            {previewRoom === "heart" && (
+              <div className="preview-extra">
+                <p>
+                  Possible blessings: healing, revive, stat boosts, and more!
+                </p>
+              </div>
+            )}
+            {(previewRoom === "club" ||
+              previewRoom === "spade" ||
+              previewRoom === "spade+") && (
+              <div className="preview-extra">
+                <p>
+                  Prepare for combat! Stronger monsters give better rewards.
+                </p>
+              </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
 
       {/* Heroes status */}
-      <div className="heroes-status">
+      <div
+        className={`heroes-status ${
+          heroStatusAnimation ? "status-changed" : ""
+        }`}
+      >
         <div className="status-header">
           <h3>Party Status</h3>
           {partyStatus && (
@@ -643,7 +948,14 @@ const SpireClimb = ({
           )}
         </div>
 
-        <div className="hero-list">
+        <motion.div
+          className="hero-list"
+          initial={{ opacity: 1 }}
+          animate={{
+            x: heroStatusAnimation ? [0, -5, 5, -5, 5, 0] : 0,
+          }}
+          transition={{ duration: 0.5 }}
+        >
           {gameData.heroes.map((hero, index) => (
             <div
               key={index}
@@ -652,6 +964,10 @@ const SpireClimb = ({
               data-tooltip-content={`${hero.class} - ${hero.specialization}
 Health: ${hero.health}/${hero.maxHealth}
 ${hero.weapon ? `Weapon: ${hero.weapon.name}` : "No weapon equipped"}`}
+              tabIndex={0}
+              aria-label={`${hero.class}: ${hero.health} of ${
+                hero.maxHealth
+              } health ${hero.health <= 0 ? "- Fallen" : ""}`}
             >
               <div className="hero-portrait">
                 <div className="hero-class">{hero.class.charAt(0)}</div>
@@ -681,7 +997,7 @@ ${hero.weapon ? `Weapon: ${hero.weapon.name}` : "No weapon equipped"}`}
               </div>
             </div>
           ))}
-        </div>
+        </motion.div>
       </div>
 
       {/* Action buttons */}
@@ -694,6 +1010,9 @@ ${hero.weapon ? `Weapon: ${hero.weapon.name}` : "No weapon equipped"}`}
             onClick={proceedToRoom}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
+            aria-label={`Enter ${getRoomName(
+              currentTierPath[currentRoomIndex]
+            )} Room`}
           >
             <span className="button-icon">🚪</span>
             Enter {getRoomName(currentTierPath[currentRoomIndex])} Room
@@ -709,6 +1028,9 @@ ${hero.weapon ? `Weapon: ${hero.weapon.name}` : "No weapon equipped"}`}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            role="dialog"
+            aria-label="Inventory"
           >
             <motion.div
               className="inventory-content"
@@ -722,6 +1044,7 @@ ${hero.weapon ? `Weapon: ${hero.weapon.name}` : "No weapon equipped"}`}
                 <button
                   className="close-button"
                   onClick={() => setShowInventory(false)}
+                  aria-label="Close inventory"
                 >
                   ✕
                 </button>
@@ -743,6 +1066,8 @@ ${hero.weapon ? `Weapon: ${hero.weapon.name}` : "No weapon equipped"}`}
                         data-tooltip-content={
                           item.description || item.effect || item.name
                         }
+                        tabIndex={0}
+                        aria-label={item.name}
                       >
                         <div className="item-icon">{item.icon}</div>
                         <div className="item-name">{item.name}</div>
@@ -766,6 +1091,9 @@ ${hero.weapon ? `Weapon: ${hero.weapon.name}` : "No weapon equipped"}`}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            role="dialog"
+            aria-label="Game Menu"
           >
             <motion.div
               className="menu-content"
@@ -779,18 +1107,27 @@ ${hero.weapon ? `Weapon: ${hero.weapon.name}` : "No weapon equipped"}`}
                 <button
                   className="close-button"
                   onClick={() => setShowMenu(false)}
+                  aria-label="Close menu"
                 >
                   ✕
                 </button>
               </div>
 
               <div className="menu-options">
-                <button className="menu-option" onClick={handleSaveGame}>
+                <button
+                  className="menu-option"
+                  onClick={handleSaveGame}
+                  aria-label="Save game"
+                >
                   <span className="option-icon">💾</span>
                   <span className="option-text">Save Game</span>
                 </button>
 
-                <button className="menu-option" onClick={toggleFogOfWar}>
+                <button
+                  className="menu-option"
+                  onClick={toggleFogOfWar}
+                  aria-label={fogOfWar ? "Show all rooms" : "Enable fog of war"}
+                >
                   <span className="option-icon">{fogOfWar ? "🔍" : "🌫️"}</span>
                   <span className="option-text">
                     {fogOfWar ? "Show All Rooms" : "Enable Fog of War"}
@@ -800,10 +1137,41 @@ ${hero.weapon ? `Weapon: ${hero.weapon.name}` : "No weapon equipped"}`}
                 <button
                   className="menu-option"
                   onClick={() => setShowInventory(true)}
+                  aria-label="View inventory"
                 >
                   <span className="option-icon">🎒</span>
                   <span className="option-text">View Inventory</span>
                 </button>
+
+                <button
+                  className="menu-option"
+                  onClick={() => setShowTips(!showTips)}
+                  aria-label={showTips ? "Hide tips" : "Show tips"}
+                >
+                  <span className="option-icon">💡</span>
+                  <span className="option-text">
+                    {showTips ? "Hide Tips" : "Show Tips"}
+                  </span>
+                </button>
+              </div>
+
+              <div className="menu-status">
+                <div className="status-item">
+                  <span className="status-label">Current Tier:</span>
+                  <span className="status-value">{gameData.currentTier}</span>
+                </div>
+                <div className="status-item">
+                  <span className="status-label">Heroes Alive:</span>
+                  <span className="status-value">
+                    {gameData.heroes.filter((h) => h.health > 0).length}/3
+                  </span>
+                </div>
+                <div className="status-item">
+                  <span className="status-label">Rooms Visited:</span>
+                  <span className="status-value">
+                    {gameData.gameStats?.roomsVisited || 0}
+                  </span>
+                </div>
               </div>
             </motion.div>
           </motion.div>

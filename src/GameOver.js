@@ -1,13 +1,72 @@
 import React, { useState, useEffect } from "react";
-import { ACHIEVEMENTS } from "../contexts/GameContext";
 import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
-import "../styles/GameOver.css";
+import { Tooltip } from "react-tooltip";
+import "./styles/GameOver.css";
+import PlaceholderUtils from "./PlaceholderUtils";
 
-// Import background images
-import victoryBgImg from "../assets/images/backgrounds/victory_bg.png";
-import defeatBgImg from "../assets/images/backgrounds/defeat_bg.png";
-import achievementBadgeImg from "../assets/images/items/achievement_badge.png";
+// Use placeholder images instead of direct imports
+const victoryBgImg = PlaceholderUtils.createPlaceholder(
+  "Victory Background",
+  1200,
+  800
+);
+const defeatBgImg = PlaceholderUtils.createPlaceholder(
+  "Defeat Background",
+  1200,
+  800
+);
+const achievementBadgeImg = PlaceholderUtils.createPlaceholder(
+  "Achievement Badge",
+  100,
+  100
+);
+
+// Define achievements directly since we can't import from context
+const ACHIEVEMENTS = {
+  first_victory: {
+    title: "First Victory",
+    description: "Complete your first successful run of the Astral Spire",
+    icon: "🏆",
+    points: 10,
+  },
+  flawless_victory: {
+    title: "Flawless Victory",
+    description: "Complete a run without any hero falling in battle",
+    icon: "✨",
+    points: 25,
+  },
+  legendary_collector: {
+    title: "Legendary Collector",
+    description: "Acquire at least one legendary weapon in a single run",
+    icon: "⚡",
+    points: 15,
+  },
+  wealthy_adventurer: {
+    title: "Wealthy Adventurer",
+    description: "Accumulate over 300 gold in a single run",
+    icon: "💰",
+    points: 20,
+  },
+  monster_slayer: {
+    title: "Monster Slayer",
+    description: "Defeat 20 monsters across all your runs",
+    icon: "⚔️",
+    points: 15,
+  },
+  dragon_tamer: {
+    title: "Dragon Tamer",
+    description: "Defeat the Dragon boss without any hero falling",
+    icon: "🐉",
+    points: 30,
+  },
+  cosmic_master: {
+    title: "Cosmic Master",
+    description: "Defeat Apexus with all heroes still alive",
+    icon: "🌌",
+    points: 50,
+  },
+};
 
 const GameOver = ({ gameData, onRestart, playSound }) => {
   const [currentView, setCurrentView] = useState("summary");
@@ -17,6 +76,10 @@ const GameOver = ({ gameData, onRestart, playSound }) => {
   const [earnedAchievements, setEarnedAchievements] = useState([]);
   const [animationComplete, setAnimationComplete] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
+  const [shareText, setShareText] = useState("");
+  const [showShare, setShowShare] = useState(false);
+  const [heroDetails, setHeroDetails] = useState(null);
+  const [showTips, setShowTips] = useState(false);
 
   // Initialize and check for completion status
   useEffect(() => {
@@ -35,6 +98,9 @@ const GameOver = ({ gameData, onRestart, playSound }) => {
     setTimeout(() => setShowAchievements(true), 3000);
     setTimeout(() => setAnimationComplete(true), 4000);
 
+    // Generate share text
+    generateShareText(isVictory);
+
     // Run confetti for victory
     if (isVictory) {
       setTimeout(() => {
@@ -46,6 +112,24 @@ const GameOver = ({ gameData, onRestart, playSound }) => {
     // Check achievements
     checkAchievements();
   }, []);
+
+  // Generate shareable text summary for social media
+  const generateShareText = (isVictory) => {
+    const stats = getStatistics();
+    let text = "";
+
+    if (isVictory) {
+      text = `🎮 I conquered Skyward Ascent! 🏔️\n`;
+      text += `Defeated ${stats.monstersDefeated} monsters, collected ${stats.gold} gold, and reached the top of the Astral Spire with ${stats.heroesAlive}/3 heroes surviving!\n`;
+      text += `Final Rating: ${getRating()} #SkywardAscent`;
+    } else {
+      text = `🎮 My journey in Skyward Ascent ended in defeat...\n`;
+      text += `Made it to Tier ${stats.tiersCompleted}, defeated ${stats.monstersDefeated} monsters, and collected ${stats.gold} gold before falling.\n`;
+      text += `I'll try again! #SkywardAscent`;
+    }
+
+    setShareText(text);
+  };
 
   // Launch confetti effect for victory celebration
   const launchConfetti = () => {
@@ -87,6 +171,21 @@ const GameOver = ({ gameData, onRestart, playSound }) => {
         scalar: randomInRange(0.4, 1),
       });
     }, 250);
+  };
+
+  // Share results on social media or copy to clipboard
+  const shareResults = () => {
+    if (navigator.clipboard) {
+      navigator.clipboard
+        .writeText(shareText)
+        .then(() => {
+          setShowShare(true);
+          setTimeout(() => setShowShare(false), 3000);
+        })
+        .catch((err) => {
+          console.error("Failed to copy text: ", err);
+        });
+    }
   };
 
   // Check which achievements were earned
@@ -131,7 +230,12 @@ const GameOver = ({ gameData, onRestart, playSound }) => {
     }
 
     // Check for dragon tamer if applicable
-    // This would need additional tracking in the gameData
+    if (
+      gameData.gameStats.defeatedDragon &&
+      !gameData.gameStats.heroDeathsDuringDragon
+    ) {
+      achievements.push("dragon_tamer");
+    }
 
     // Set earned achievements
     setEarnedAchievements(achievements);
@@ -152,6 +256,10 @@ const GameOver = ({ gameData, onRestart, playSound }) => {
       itemsUsed: gameData.gameStats.itemsUsed || 0,
       combatRounds: gameData.gameStats.combatRounds || 0,
       heroDeaths: gameData.gameStats.heroDeaths || 0,
+      goldSpent: gameData.gameStats.goldSpent || 0,
+      healingReceived: gameData.gameStats.healingReceived || 0,
+      damageTaken: gameData.gameStats.damageTaken || 0,
+      damageDealt: gameData.gameStats.damageDealt || 0,
     };
   };
 
@@ -183,6 +291,10 @@ const GameOver = ({ gameData, onRestart, playSound }) => {
     score += Math.floor(stats.gold / 50);
     score += stats.totalItems * 5;
     score += stats.monstersDefeated * 2;
+    score -= stats.heroDeaths * 10;
+
+    // Extra points for achievements
+    score += earnedAchievements.length * 10;
 
     // Return rating based on score
     if (score >= 200) return "Legendary Ascendant";
@@ -196,6 +308,58 @@ const GameOver = ({ gameData, onRestart, playSound }) => {
   const changeTab = (tab) => {
     if (playSound) playSound();
     setCurrentView(tab);
+  };
+
+  // Show detailed hero info
+  const showHeroDetail = (hero) => {
+    setHeroDetails(hero);
+  };
+
+  // Close hero detail view
+  const closeHeroDetail = () => {
+    setHeroDetails(null);
+  };
+
+  // Toggle gameplay tips
+  const toggleTips = () => {
+    setShowTips(!showTips);
+  };
+
+  // Generate tips based on gameplay stats
+  const getGameplayTips = () => {
+    const tips = [];
+
+    if (stats.heroDeaths > 2) {
+      tips.push(
+        "Try keeping your heroes alive longer by prioritizing health potions and defensive items."
+      );
+    }
+
+    if (stats.heroesWithLegendary === 0) {
+      tips.push(
+        "Focus on acquiring better weapons through elite monsters and careful card flipping in the weapon chest."
+      );
+    }
+
+    if (stats.gold < 100) {
+      tips.push(
+        "Look for opportunities to earn more gold by choosing Diamond rooms and utilizing Fortune enchantments."
+      );
+    }
+
+    if (stats.damageTaken > stats.damageDealt) {
+      tips.push(
+        "Try to improve your combat strategy by matching cards more effectively and utilizing class abilities."
+      );
+    }
+
+    if (tips.length === 0) {
+      tips.push(
+        "You're doing great! Keep refining your strategy to climb even higher next time."
+      );
+    }
+
+    return tips;
   };
 
   return (
@@ -223,19 +387,29 @@ const GameOver = ({ gameData, onRestart, playSound }) => {
           className={`tab ${currentView === "summary" ? "active" : ""}`}
           onClick={() => changeTab("summary")}
         >
-          Summary
+          <span className="tab-icon">📊</span>
+          <span className="tab-text">Summary</span>
         </button>
         <button
           className={`tab ${currentView === "heroes" ? "active" : ""}`}
           onClick={() => changeTab("heroes")}
         >
-          Heroes
+          <span className="tab-icon">👥</span>
+          <span className="tab-text">Heroes</span>
         </button>
         <button
           className={`tab ${currentView === "achievements" ? "active" : ""}`}
           onClick={() => changeTab("achievements")}
         >
-          Achievements
+          <span className="tab-icon">🏆</span>
+          <span className="tab-text">Achievements</span>
+        </button>
+        <button
+          className={`tab ${currentView === "tips" ? "active" : ""}`}
+          onClick={() => changeTab("tips")}
+        >
+          <span className="tab-icon">💡</span>
+          <span className="tab-text">Tips</span>
         </button>
       </div>
 
@@ -327,6 +501,25 @@ const GameOver = ({ gameData, onRestart, playSound }) => {
                         <div className="stat-value">{stats.heroDeaths}</div>
                       </div>
                     </div>
+
+                    {/* Advanced stats */}
+                    <div className="stat-item">
+                      <div className="stat-icon">💳</div>
+                      <div className="stat-details">
+                        <div className="stat-label">Gold Spent</div>
+                        <div className="stat-value">{stats.goldSpent || 0}</div>
+                      </div>
+                    </div>
+
+                    <div className="stat-item">
+                      <div className="stat-icon">❤️</div>
+                      <div className="stat-details">
+                        <div className="stat-label">Healing Received</div>
+                        <div className="stat-value">
+                          {stats.healingReceived || 0}
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </motion.div>
               )}
@@ -360,6 +553,31 @@ const GameOver = ({ gameData, onRestart, playSound }) => {
                       </span>
                     ))}
                   </div>
+
+                  <motion.div
+                    className="share-results"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.5 }}
+                  >
+                    <button className="share-button" onClick={shareResults}>
+                      <span className="share-icon">📋</span>
+                      Copy Results to Share
+                    </button>
+
+                    <AnimatePresence>
+                      {showShare && (
+                        <motion.div
+                          className="share-notification"
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                        >
+                          Results copied to clipboard!
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -395,6 +613,8 @@ const GameOver = ({ gameData, onRestart, playSound }) => {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5, delay: index * 0.2 }}
+                        onClick={() => showHeroDetail(hero)}
+                        whileHover={{ scale: 1.02 }}
                       >
                         <div className="hero-header">
                           <h4 className="hero-name">{hero.class}</h4>
@@ -460,10 +680,126 @@ const GameOver = ({ gameData, onRestart, playSound }) => {
                               ? `${hero.class} fell in battle but contributed valiantly to the party's journey.`
                               : `${hero.class} survived the treacherous climb to the top of the Astral Spire.`}
                           </p>
+                          <div className="view-details">
+                            Click for details...
+                          </div>
                         </div>
                       </motion.div>
                     ))}
                   </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Hero Detail Modal */}
+            <AnimatePresence>
+              {heroDetails && (
+                <motion.div
+                  className="hero-detail-modal"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                >
+                  <motion.div
+                    className="modal-content"
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.8, opacity: 0 }}
+                  >
+                    <div className="modal-header">
+                      <h3>
+                        {heroDetails.class} - {heroDetails.specialization}
+                      </h3>
+                      <button className="close-modal" onClick={closeHeroDetail}>
+                        ✕
+                      </button>
+                    </div>
+
+                    <div className="hero-detail-content">
+                      <div className="hero-stats-section">
+                        <div className="stat-row">
+                          <div className="stat-label">Final Health:</div>
+                          <div className="stat-value">
+                            {heroDetails.health}/{heroDetails.maxHealth}
+                          </div>
+                        </div>
+
+                        <div className="stat-row">
+                          <div className="stat-label">Battles Fought:</div>
+                          <div className="stat-value">
+                            {heroDetails.battlesFought || "N/A"}
+                          </div>
+                        </div>
+
+                        <div className="stat-row">
+                          <div className="stat-label">Damage Dealt:</div>
+                          <div className="stat-value">
+                            {heroDetails.damageDealt || "N/A"}
+                          </div>
+                        </div>
+
+                        <div className="stat-row">
+                          <div className="stat-label">Abilities Used:</div>
+                          <div className="stat-value">
+                            {heroDetails.abilitiesUsed || "N/A"}
+                          </div>
+                        </div>
+                      </div>
+
+                      {heroDetails.weapon && (
+                        <div className="hero-weapon-section">
+                          <h4>Weapon</h4>
+                          <div
+                            className={`weapon-card ${heroDetails.weapon.rarity}`}
+                          >
+                            <div className="weapon-name">
+                              {heroDetails.weapon.name}
+                            </div>
+                            <div className="weapon-rarity">
+                              {heroDetails.weapon.rarity}
+                            </div>
+                            {heroDetails.weapon.enchant && (
+                              <div className="weapon-enchant">
+                                Enchantment: {heroDetails.weapon.enchant}
+                              </div>
+                            )}
+                            <div className="weapon-effect">
+                              {heroDetails.weapon.effect ||
+                                "No effect details available"}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="hero-narrative">
+                        <h4>Adventure Narrative</h4>
+                        <p>
+                          {heroDetails.health <= 0
+                            ? `${heroDetails.class} fought bravely through the Astral Spire, but ultimately fell in battle. Their sacrifice will be remembered by the party.`
+                            : `${heroDetails.class} demonstrated remarkable skill and resilience throughout the journey. Through battles against formidable foes and the perils of the spire, they emerged victorious.`}
+                        </p>
+                        <p>
+                          {heroDetails.specialization === "Shadowblade"
+                            ? "Using the powers of shadow, they struck quickly and decisively against their enemies."
+                            : heroDetails.specialization === "Runeblade"
+                            ? "Their mastery of rune magic augmented their combat prowess to devastating effect."
+                            : heroDetails.specialization === "Timebender"
+                            ? "Manipulating the flow of time itself, they created opportunities where none existed."
+                            : heroDetails.specialization === "Illusionist"
+                            ? "Their illusions confused and misdirected enemies, turning the tide of battle."
+                            : heroDetails.specialization === "Huntress"
+                            ? "With unerring accuracy, they found the weaknesses in every foe."
+                            : heroDetails.specialization === "Beastmaster"
+                            ? "Their animal companions proved invaluable allies throughout the journey."
+                            : heroDetails.specialization === "Sentinel"
+                            ? "Standing stalwart against overwhelming odds, they protected the party from harm."
+                            : heroDetails.specialization === "Warden"
+                            ? "Their protective magic ensured the party's survival through many challenges."
+                            : "Their unique abilities were instrumental to the party's progress."}
+                        </p>
+                      </div>
+                    </div>
+                  </motion.div>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -504,6 +840,13 @@ const GameOver = ({ gameData, onRestart, playSound }) => {
                           initial={{ opacity: 0, scale: 0.8 }}
                           animate={{ opacity: 1, scale: 1 }}
                           transition={{ duration: 0.3, delay: index * 0.1 }}
+                          whileHover={isEarned ? { scale: 1.03 } : {}}
+                          data-tooltip-id="achievement-tooltip"
+                          data-tooltip-content={
+                            isEarned
+                              ? `Earned! ${achievement.description}`
+                              : `Locked: ${achievement.description}`
+                          }
                         >
                           <div className="achievement-icon">
                             {isEarned ? (
@@ -562,6 +905,95 @@ const GameOver = ({ gameData, onRestart, playSound }) => {
             </AnimatePresence>
           </motion.div>
         )}
+
+        {/* Tips View */}
+        {currentView === "tips" && (
+          <motion.div
+            className="tips-view"
+            key="tips"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20 }}
+            transition={{ duration: 0.3 }}
+          >
+            <motion.div
+              className="tips-content"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <h3>Gameplay Tips</h3>
+
+              <div className="tips-section">
+                <h4>Improve Your Next Run</h4>
+                <ul className="tips-list">
+                  {getGameplayTips().map((tip, index) => (
+                    <motion.li
+                      key={index}
+                      className="tip-item"
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.2 }}
+                    >
+                      <div className="tip-icon">💡</div>
+                      <div className="tip-text">{tip}</div>
+                    </motion.li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="strategy-section">
+                <h4>Advanced Strategies</h4>
+                <div className="strategy-cards">
+                  <motion.div
+                    className="strategy-card"
+                    whileHover={{ scale: 1.03 }}
+                  >
+                    <div className="strategy-header">
+                      <div className="strategy-icon">⚔️</div>
+                      <h5>Combat Mastery</h5>
+                    </div>
+                    <p>
+                      Match cards to trigger hero abilities and maximize damage
+                      output. Save potent abilities for elite monsters and
+                      bosses.
+                    </p>
+                  </motion.div>
+
+                  <motion.div
+                    className="strategy-card"
+                    whileHover={{ scale: 1.03 }}
+                  >
+                    <div className="strategy-header">
+                      <div className="strategy-icon">🛡️</div>
+                      <h5>Party Balance</h5>
+                    </div>
+                    <p>
+                      A balanced party with complementary abilities performs
+                      better. Consider including a Guardian for protection or a
+                      Manipulator for control.
+                    </p>
+                  </motion.div>
+
+                  <motion.div
+                    className="strategy-card"
+                    whileHover={{ scale: 1.03 }}
+                  >
+                    <div className="strategy-header">
+                      <div className="strategy-icon">🏪</div>
+                      <h5>Resource Management</h5>
+                    </div>
+                    <p>
+                      Prioritize gold for essential items like healing potions.
+                      Save gems for enchanting powerful weapons rather than
+                      common ones.
+                    </p>
+                  </motion.div>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
       </AnimatePresence>
 
       <motion.div
@@ -576,6 +1008,7 @@ const GameOver = ({ gameData, onRestart, playSound }) => {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
+          <span className="button-icon">🔄</span>
           Begin a New Adventure
         </motion.button>
       </motion.div>
@@ -584,6 +1017,9 @@ const GameOver = ({ gameData, onRestart, playSound }) => {
       {showConfetti && (
         <div className="confetti-container" id="confetti-container"></div>
       )}
+
+      {/* Tooltips */}
+      <Tooltip id="achievement-tooltip" />
     </div>
   );
 };

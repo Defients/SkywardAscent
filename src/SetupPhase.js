@@ -10,11 +10,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Tooltip } from "react-tooltip";
 import "./styles/SetupPhase.css";
 
-// Import hero class illustrations with correct paths
-import bladedancerImg from "./assets/images/heroes/bladedancer.png";
-import manipulatorImg from "./assets/images/heroes/manipulator.png";
-import trackerImg from "./assets/images/heroes/tracker.png";
-import guardianImg from "./assets/images/heroes/guardian.png";
+// Replace your import statements with these constant declarations
+const bladedancerImg = `${process.env.PUBLIC_URL}/assets/images/heroes/portraits/bladedancer.png`;
+const manipulatorImg = `${process.env.PUBLIC_URL}/assets/images/heroes/portraits/manipulator.png`;
+const trackerImg = `${process.env.PUBLIC_URL}/assets/images/heroes/portraits/tracker.png`;
+const guardianImg = `${process.env.PUBLIC_URL}/assets/images/heroes/portraits/guardian.png`;
 
 // Mapping of hero ranks to their respective images
 const heroImages = {
