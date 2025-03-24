@@ -179,7 +179,8 @@ const SetupPhase = ({ onComplete, playSound }) => {
     ranks.forEach((rank) => {
       const numericRank = parseInt(rank);
       if (!isNaN(numericRank)) {
-        const card = peonPile.find((c) => c.rank === rank);
+        // FIX: Convert card.rank to string when comparing
+        const card = peonPile.find((c) => c.rank.toString() === rank);
         if (card) {
           quickClassCards[numericRank] = card;
         }
@@ -210,7 +211,8 @@ const SetupPhase = ({ onComplete, playSound }) => {
     ranks.forEach((rank) => {
       const numericRank = parseInt(rank);
       if (!isNaN(numericRank)) {
-        const rankPile = peonPile.filter((c) => c.rank === rank);
+        // FIX: Convert card.rank to string when comparing
+        const rankPile = peonPile.filter((c) => c.rank.toString() === rank);
         if (rankPile.length > 0) {
           // Shuffle and take the first card
           const shuffledPile = shuffleArray(rankPile);
