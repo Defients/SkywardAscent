@@ -54,6 +54,7 @@ const SetupPhase = ({ onComplete, playSound }) => {
   const [showTooltip, setShowTooltip] = useState(false);
   const [hoveredClass, setHoveredClass] = useState(null);
   const [emojiHovered, setEmojiHovered] = useState(null);
+  const [debugMode, setDebugMode] = useState(false); // For debugging
 
   // Initialize the deck with loading animation
   useEffect(() => {
@@ -120,6 +121,30 @@ const SetupPhase = ({ onComplete, playSound }) => {
     }
   };
 
+  // Debug function to create fallback cards if needed
+  const createFallbackCards = () => {
+    const fallbackCards = {};
+    const requiredRanks = [3, 5, 7, 9];
+
+    requiredRanks.forEach((rank) => {
+      if (!classCards[rank]) {
+        // Create a fallback card
+        fallbackCards[rank] = {
+          id: `fallback-${rank}`,
+          rank: rank.toString(),
+          suit: "♠",
+          color: "black",
+          isTapped: false,
+          value: rank,
+        };
+        console.log(`Created fallback card for rank ${rank}`);
+      }
+    });
+
+    // Update classCards with fallbacks
+    setClassCards((prev) => ({ ...prev, ...fallbackCards }));
+  };
+
   // Toggle class selection with improved feedback
   const toggleClassSelection = (rank) => {
     if (playSound) playSound();
@@ -174,18 +199,44 @@ const SetupPhase = ({ onComplete, playSound }) => {
 
     // For quick play, we just pick the first cards of each rank
     const quickClassCards = {};
-    const ranks = ["3", "5", "7", "9"];
+    const ranks = [3, 5, 7, 9]; // Use numbers instead of strings for consistency
+
+    // Debug: Log peon pile to check for rank values
+    if (debugMode) {
+      console.log("Peon pile before assignment:", peonPile);
+    }
 
     ranks.forEach((rank) => {
-      const numericRank = parseInt(rank);
-      if (!isNaN(numericRank)) {
-        // FIX: Convert card.rank to string when comparing
-        const card = peonPile.find((c) => c.rank.toString() === rank);
-        if (card) {
-          quickClassCards[numericRank] = card;
+      // Use both string and number comparison to be safe
+      const card = peonPile.find(
+        (c) => c.rank === rank || c.rank === rank.toString()
+      );
+
+      if (card) {
+        quickClassCards[rank] = card;
+        if (debugMode) {
+          console.log(`Found card for rank ${rank}:`, card);
+        }
+      } else {
+        // Fallback: manually create a card for this rank with default values
+        quickClassCards[rank] = {
+          id: `fallback-${rank}`,
+          rank: rank.toString(), // ensure string format
+          suit: "♠", // default to spades
+          color: "black", // default to black
+          isTapped: false,
+          value: rank,
+        };
+
+        if (debugMode) {
+          console.log(`Created fallback card for rank ${rank}`);
         }
       }
     });
+
+    if (debugMode) {
+      console.log("Final class cards:", quickClassCards);
+    }
 
     setClassCards(quickClassCards);
 
@@ -205,21 +256,51 @@ const SetupPhase = ({ onComplete, playSound }) => {
 
     // For advanced play, we create separate piles for each rank
     const advancedClassCards = {};
-    const ranks = ["3", "5", "7", "9"];
+    const ranks = [3, 5, 7, 9]; // Use numbers instead of strings for consistency
+
+    // Debug: Log peon pile to check for rank values
+    if (debugMode) {
+      console.log("Peon pile before advanced assignment:", peonPile);
+    }
 
     // Create piles for each rank
     ranks.forEach((rank) => {
-      const numericRank = parseInt(rank);
-      if (!isNaN(numericRank)) {
-        // FIX: Convert card.rank to string when comparing
-        const rankPile = peonPile.filter((c) => c.rank.toString() === rank);
-        if (rankPile.length > 0) {
-          // Shuffle and take the first card
-          const shuffledPile = shuffleArray(rankPile);
-          advancedClassCards[numericRank] = shuffledPile[0];
+      // Use both string and number comparison to be safe
+      const rankPile = peonPile.filter(
+        (c) => c.rank === rank || c.rank === rank.toString()
+      );
+
+      if (rankPile.length > 0) {
+        // Shuffle and take the first card
+        const shuffledPile = shuffleArray(rankPile);
+        advancedClassCards[rank] = shuffledPile[0];
+
+        if (debugMode) {
+          console.log(
+            `Found ${rankPile.length} cards for rank ${rank}, selected:`,
+            shuffledPile[0]
+          );
+        }
+      } else {
+        // Fallback: manually create a card for this rank with default values
+        advancedClassCards[rank] = {
+          id: `fallback-${rank}`,
+          rank: rank.toString(), // ensure string format
+          suit: "♠", // default to spades
+          color: "black", // default to black
+          isTapped: false,
+          value: rank,
+        };
+
+        if (debugMode) {
+          console.log(`Created fallback card for rank ${rank}`);
         }
       }
     });
+
+    if (debugMode) {
+      console.log("Final advanced class cards:", advancedClassCards);
+    }
 
     setClassCards(advancedClassCards);
 
@@ -244,17 +325,48 @@ const SetupPhase = ({ onComplete, playSound }) => {
     }
 
     try {
+      // Safety check - verify all selected classes have cards
+      const missingCards = selectedClasses.filter((rank) => !classCards[rank]);
+
+      if (missingCards.length > 0) {
+        // Some cards are missing - create fallbacks first
+        createFallbackCards();
+        console.log("Created fallbacks for missing cards:", missingCards);
+        // Small delay to ensure state updates before continuing
+        setTimeout(() => {
+          completeSetupWithValidation();
+        }, 100);
+      } else {
+        // All cards exist, proceed normally
+        completeSetupWithValidation();
+      }
+    } catch (error) {
+      console.error("Error in setup validation:", error);
+      setErrorMessage("Error creating hero party. Please try again.");
+    }
+  };
+
+  // Helper function to complete setup after validation
+  const completeSetupWithValidation = () => {
+    try {
+      // Double check that all cards exist before proceeding
+      for (const rank of selectedClasses) {
+        if (!classCards[rank]) {
+          throw new Error(
+            `Card for rank ${rank} is still undefined after fallback creation`
+          );
+        }
+      }
+
       // Create hero objects from selected classes
       const heroes = selectedClasses.map((rank) => {
         const card = classCards[rank];
-        if (!card) {
-          throw new Error(`Card for rank ${rank} is undefined`);
-        }
-
         const classInfo = CLASS_DATA[rank];
+
         // Handle possible undefined color with a fallback
+        const cardColor = card.color || "black";
         const specialization =
-          card.color === "red" ? classInfo.redSpec : classInfo.blackSpec;
+          cardColor === "red" ? classInfo.redSpec : classInfo.blackSpec;
 
         return {
           class: classInfo.name,
@@ -291,7 +403,7 @@ const SetupPhase = ({ onComplete, playSound }) => {
       });
     } catch (error) {
       console.error("Error completing setup:", error);
-      setErrorMessage("Error creating hero party. Please try again.");
+      setErrorMessage(`Error creating hero party: ${error.message}`);
     }
   };
 
@@ -788,6 +900,16 @@ const SetupPhase = ({ onComplete, playSound }) => {
           
           .tip-icon {
             font-size: 16px;
+          }
+          
+          .shake-animation {
+            animation: shake 0.5s ease;
+          }
+          
+          @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
           }
         `}
         </style>
