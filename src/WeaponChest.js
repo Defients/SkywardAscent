@@ -6,15 +6,30 @@ import {
   WEAPONS,
   ENCHANTMENTS,
   getSuitColorClass,
-} from "../contexts/GameContext";
+} from "./GameContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { Tooltip } from "react-tooltip";
-import "../styles/WeaponChest.css";
+import "./styles/WeaponChest.css";
 
-// Import weapon and chest images
-import chestClosedImg from "../assets/images/items/chest_closed.png";
-import chestOpenImg from "../assets/images/items/chest_open.png";
-import cardBackImg from "../assets/images/cards/card_back.png";
+// Import placeholder utilities for images
+import PlaceholderUtils from "./PlaceholderUtils";
+
+// Create placeholder images for assets
+const chestClosedImg = PlaceholderUtils.createPlaceholder(
+  "Chest Closed",
+  320,
+  240
+);
+const chestOpenImg = PlaceholderUtils.createPlaceholder("Chest Open", 320, 240);
+const cardBackImg = PlaceholderUtils.createPlaceholder("Card Back", 120, 170);
+
+// Define suits directly here for clarity
+const SUITS = {
+  CLUB: "♣",
+  DIAMOND: "♦",
+  HEART: "♥",
+  SPADE: "♠",
+};
 
 const WeaponChest = ({ gameData, onComplete, playSound }) => {
   const [selectedHero, setSelectedHero] = useState(null);
@@ -41,9 +56,15 @@ const WeaponChest = ({ gameData, onComplete, playSound }) => {
   const [fireworksCount, setFireworksCount] = useState(0);
   const [currentTip, setCurrentTip] = useState(0);
   const [hoveredWeapon, setHoveredWeapon] = useState(null);
+  const [accessibilityAnnouncement, setAccessibilityAnnouncement] =
+    useState("");
+  const [cardHover, setCardHover] = useState(false);
+  const [chestAnimation, setChestAnimation] = useState(false);
 
   // Ref for the card container
   const cardContainerRef = useRef(null);
+  // Ref for accessibility announcements
+  const announcementRef = useRef(null);
 
   // Tips to show during the chest opening
   const weaponChestTips = [
@@ -55,6 +76,8 @@ const WeaponChest = ({ gameData, onComplete, playSound }) => {
     "Jokers during gold rolls grant your weapon an enchantment!",
     "Matching ranks on enchantment rolls gives a Fiery enchant, with a chance for Crusader.",
     "Different ranks on enchantment rolls give a Toxic enchant.",
+    "Some weapons have special abilities that activate during combat.",
+    "Enchantments enhance your weapon's abilities with magical effects.",
   ];
 
   // Change tip every 8 seconds
@@ -65,6 +88,20 @@ const WeaponChest = ({ gameData, onComplete, playSound }) => {
 
     return () => clearInterval(tipInterval);
   }, []);
+
+  // Handle accessibility announcements
+  useEffect(() => {
+    if (accessibilityAnnouncement) {
+      if (announcementRef.current) {
+        announcementRef.current.textContent = accessibilityAnnouncement;
+      }
+      // Clear announcement after screen reader has time to read it
+      const timer = setTimeout(() => {
+        setAccessibilityAnnouncement("");
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [accessibilityAnnouncement]);
 
   // Prepare the chest pile when a hero is selected
   useEffect(() => {
@@ -103,6 +140,11 @@ const WeaponChest = ({ gameData, onComplete, playSound }) => {
     if (playSound) playSound();
 
     setIsChestOpen(true);
+    setChestAnimation(true);
+
+    setTimeout(() => {
+      setChestAnimation(false);
+    }, 1000);
 
     // Get unused class's Peon cards (3 cards)
     const unusedClassRank = gameData.unusedClassRank;
@@ -131,6 +173,9 @@ const WeaponChest = ({ gameData, onComplete, playSound }) => {
 
     setFlippingState("flipping_for_weapon");
     setMessage("Flip cards to determine your weapon...");
+    setAccessibilityAnnouncement(
+      `Chest opened for ${selectedHero.class}. You can now flip cards to determine your weapon.`
+    );
 
     // Animation delay
     setTimeout(() => {
@@ -187,13 +232,21 @@ const WeaponChest = ({ gameData, onComplete, playSound }) => {
       // Joker gives a Common weapon
       setWeaponRarity("common");
       setMessage("You got a Joker! This gives you a Common weapon.");
+      setAccessibilityAnnouncement(
+        "You flipped a Joker. You will receive a Common weapon."
+      );
       selectWeapon("common");
       setFlippingState("flipping_for_gold");
       return;
     }
 
     // Royalty card logic
-    if ([RANKS.JACK, RANKS.QUEEN, RANKS.KING, RANKS.ACE].includes(card.rank)) {
+    if (
+      card.rank === RANKS.JACK ||
+      card.rank === RANKS.QUEEN ||
+      card.rank === RANKS.KING ||
+      card.rank === RANKS.ACE
+    ) {
       if (card.suit === SUITS.SPADE) {
         // First Spade gives Epic, subsequent ones give Rare
         if (!previousCards.some((pc) => pc.suit === SUITS.SPADE)) {
@@ -201,12 +254,18 @@ const WeaponChest = ({ gameData, onComplete, playSound }) => {
           setMessage(
             "You flipped a Spade Royalty card! This gives you an Epic weapon!"
           );
+          setAccessibilityAnnouncement(
+            "You flipped a Spade Royalty card. You will receive an Epic weapon!"
+          );
           selectWeapon("epic");
           setFlippingState("flipping_for_gold");
         } else {
           setWeaponRarity("rare");
           setMessage(
             "You flipped another Spade! This gives you a Rare weapon."
+          );
+          setAccessibilityAnnouncement(
+            "You flipped another Spade. You will receive a Rare weapon."
           );
           selectWeapon("rare");
           setFlippingState("flipping_for_gold");
@@ -216,6 +275,9 @@ const WeaponChest = ({ gameData, onComplete, playSound }) => {
         setMessage(
           "You flipped a non-Spade Royalty card. Discard and flip again."
         );
+        setAccessibilityAnnouncement(
+          "You flipped a non-Spade Royalty card. It is discarded. Flip again."
+        );
       }
       return;
     }
@@ -224,12 +286,18 @@ const WeaponChest = ({ gameData, onComplete, playSound }) => {
     const consecutivePeons = [...previousCards, card].filter(
       (c) =>
         c.rank !== RANKS.JOKER &&
-        ![RANKS.JACK, RANKS.QUEEN, RANKS.KING, RANKS.ACE].includes(c.rank)
+        c.rank !== RANKS.JACK &&
+        c.rank !== RANKS.QUEEN &&
+        c.rank !== RANKS.KING &&
+        c.rank !== RANKS.ACE
     );
 
     if (consecutivePeons.length === 2) {
       setWeaponRarity("rare");
       setMessage("Two Peon cards in a row! This gives you a Rare weapon.");
+      setAccessibilityAnnouncement(
+        "You've flipped two Peon cards in a row. You will receive a Rare weapon."
+      );
       selectWeapon("rare");
       setFlippingState("flipping_for_gold");
     } else if (consecutivePeons.length === 3) {
@@ -237,10 +305,16 @@ const WeaponChest = ({ gameData, onComplete, playSound }) => {
       setMessage(
         "Three Peon cards in a row! This gives you a Legendary weapon!"
       );
+      setAccessibilityAnnouncement(
+        "You've flipped three Peon cards in a row! You will receive a Legendary weapon!"
+      );
       selectWeapon("legendary");
       setFlippingState("flipping_for_gold");
     } else {
       setMessage(
+        "You flipped a Peon card. Keep flipping to try for better weapons."
+      );
+      setAccessibilityAnnouncement(
         "You flipped a Peon card. Keep flipping to try for better weapons."
       );
     }
@@ -253,15 +327,26 @@ const WeaponChest = ({ gameData, onComplete, playSound }) => {
       setMessage(
         "You got a Joker during the gold flip! Your weapon gains an enchant!"
       );
+      setAccessibilityAnnouncement(
+        "You flipped a Joker during the gold phase. Your weapon will gain an enchantment!"
+      );
       setFlippingState("flipping_for_enchant");
       return;
     }
 
     // Royalty card stops gold flipping
-    if ([RANKS.JACK, RANKS.QUEEN, RANKS.KING, RANKS.ACE].includes(card.rank)) {
+    if (
+      card.rank === RANKS.JACK ||
+      card.rank === RANKS.QUEEN ||
+      card.rank === RANKS.KING ||
+      card.rank === RANKS.ACE
+    ) {
       const goldAmount = card.suit === SUITS.SPADE ? 20 : 15;
       setGoldBonus((prevBonus) => prevBonus + goldAmount);
       setMessage(
+        `Royalty card gives you ${goldAmount} gold. Gold flipping complete.`
+      );
+      setAccessibilityAnnouncement(
         `Royalty card gives you ${goldAmount} gold. Gold flipping complete.`
       );
       // Offer risk flip
@@ -274,11 +359,17 @@ const WeaponChest = ({ gameData, onComplete, playSound }) => {
       // Second Peon gives 3x
       setMultiplier(3);
       setMessage("Second Peon card! Your gold bonus is now 3x.");
+      setAccessibilityAnnouncement(
+        "You flipped a second Peon card. Your gold bonus is now tripled."
+      );
     } else {
       // First Peon gives 2x
       setIsGoldMultiplying(true);
       setMultiplier(2);
       setMessage("Peon card! Your gold bonus is now 2x.");
+      setAccessibilityAnnouncement(
+        "You flipped a Peon card. Your gold bonus is now doubled."
+      );
     }
   };
 
@@ -290,6 +381,9 @@ const WeaponChest = ({ gameData, onComplete, playSound }) => {
     // We need two flips to determine enchant type
     if (enchantFlips.length === 0) {
       setMessage("Flip one more card to determine enchant type...");
+      setAccessibilityAnnouncement(
+        "Flip one more card to determine enchantment type."
+      );
       return;
     }
 
@@ -301,11 +395,17 @@ const WeaponChest = ({ gameData, onComplete, playSound }) => {
       setMessage(
         "Ranks match! Your weapon gets a Fiery enchant. Flip once more for a chance at Crusader!"
       );
+      setAccessibilityAnnouncement(
+        "The card ranks match! Your weapon gets a Fiery enchantment. You can flip once more for a chance at a Crusader enchantment."
+      );
       setFlippingState("risk_for_crusader");
     } else {
       // Ranks don't match - Toxic enchant
       setEnchant("toxic");
       setMessage("Ranks don't match. Your weapon gets a Toxic enchant.");
+      setAccessibilityAnnouncement(
+        "The card ranks don't match. Your weapon gets a Toxic enchantment."
+      );
       setFlippingState("complete");
     }
   };
@@ -337,6 +437,9 @@ const WeaponChest = ({ gameData, onComplete, playSound }) => {
       if (card.rank === RANKS.JOKER) {
         setEnchant("crusader");
         setMessage("Success! Your weapon gets a Crusader enchant!");
+        setAccessibilityAnnouncement(
+          "Success! Your weapon gets a Crusader enchantment!"
+        );
         setShowFireworks(true);
 
         // Create multiple fireworks
@@ -353,6 +456,9 @@ const WeaponChest = ({ gameData, onComplete, playSound }) => {
         }, 1500);
       } else {
         setMessage("No upgrade. Your weapon keeps the Fiery enchant.");
+        setAccessibilityAnnouncement(
+          "No upgrade. Your weapon keeps the Fiery enchantment."
+        );
       }
 
       setFlippingState("complete");
@@ -391,6 +497,7 @@ const WeaponChest = ({ gameData, onComplete, playSound }) => {
       if (card.rank === RANKS.JOKER) {
         setGoldBonus((prevBonus) => prevBonus + 35);
         setMessage("Success! You get an extra 35 gold!");
+        setAccessibilityAnnouncement("Success! You get an extra 35 gold!");
         setShowFireworks(true);
 
         // Create fireworks
@@ -408,6 +515,7 @@ const WeaponChest = ({ gameData, onComplete, playSound }) => {
       } else {
         setGoldBonus(0);
         setMessage("Risk failed! You lose the gold bonus.");
+        setAccessibilityAnnouncement("Risk failed! You lose the gold bonus.");
       }
 
       // If we have an enchant, we're done
@@ -472,6 +580,15 @@ const WeaponChest = ({ gameData, onComplete, playSound }) => {
     // Calculate final gold bonus
     const finalGoldBonus = goldBonus * multiplier;
 
+    // Set final accessibility announcement
+    setAccessibilityAnnouncement(
+      `Weapon chest complete. ${
+        selectedHero.class
+      } received a ${weaponRarity} ${weapon.name}${
+        enchant ? ` with ${enchant} enchantment` : ""
+      }. You gained ${finalGoldBonus} gold.`
+    );
+
     // Complete and move to next phase
     onComplete({
       heroes: updatedHeroes,
@@ -529,6 +646,8 @@ const WeaponChest = ({ gameData, onComplete, playSound }) => {
             backgroundColor: getColor(),
             animationDelay: `${delay}s`,
           }}
+          role="presentation"
+          aria-hidden="true"
         ></div>
       );
     });
@@ -568,7 +687,12 @@ const WeaponChest = ({ gameData, onComplete, playSound }) => {
               className="hero-option"
               whileHover={{ scale: 1.05, y: -5 }}
               whileTap={{ scale: 0.95 }}
-              onClick={() => setSelectedHero(hero)}
+              onClick={() => {
+                setSelectedHero(hero);
+                setAccessibilityAnnouncement(
+                  `Selected ${hero.class} to receive the weapon chest.`
+                );
+              }}
             >
               <h3>{hero.class}</h3>
               <p className="hero-spec">{hero.specialization}</p>
@@ -586,6 +710,7 @@ const WeaponChest = ({ gameData, onComplete, playSound }) => {
                 className="select-button"
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
+                aria-label={`Select ${hero.class}`}
               >
                 Select
               </motion.button>
@@ -596,6 +721,11 @@ const WeaponChest = ({ gameData, onComplete, playSound }) => {
         <div className="tip-container">
           <div className="tip-icon">💡</div>
           <div className="tip-text">{weaponChestTips[currentTip]}</div>
+        </div>
+
+        {/* Accessibility announcement region */}
+        <div className="sr-only" aria-live="polite" ref={announcementRef}>
+          {accessibilityAnnouncement}
         </div>
       </motion.div>
     );
@@ -623,7 +753,7 @@ const WeaponChest = ({ gameData, onComplete, playSound }) => {
           className="chest-image-container"
           initial={{ scale: 1 }}
           animate={
-            isChestOpen
+            chestAnimation
               ? {
                   scale: [1, 1.2, 1.1],
                   y: [0, -20, -10],
@@ -640,7 +770,7 @@ const WeaponChest = ({ gameData, onComplete, playSound }) => {
           <div className={`chest-glow ${isChestOpen ? "open" : ""}`}></div>
         </motion.div>
 
-        <div className="chest-message">
+        <div className="chest-message" aria-live="polite">
           <span className="message-text">{message}</span>
         </div>
       </div>
@@ -651,10 +781,20 @@ const WeaponChest = ({ gameData, onComplete, playSound }) => {
         <div className="card-container" ref={cardContainerRef}>
           {chestPile.length > 0 && (
             <motion.div
-              className="card deck"
+              className={`card deck ${cardHover ? "hover" : ""}`}
               onClick={flipCard}
+              onMouseEnter={() => setCardHover(true)}
+              onMouseLeave={() => setCardHover(false)}
               whileHover={{ scale: 1.05, y: -5 }}
               style={{ zIndex: 10 }}
+              role="button"
+              aria-label="Flip a card"
+              tabIndex={0}
+              onKeyPress={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  flipCard();
+                }
+              }}
             >
               <img src={cardBackImg} alt="Card Back" />
               <div className="card-count">{chestPile.length}</div>
@@ -668,6 +808,7 @@ const WeaponChest = ({ gameData, onComplete, playSound }) => {
                 rotateY: cardRotation,
                 transition: { duration: 0.3 },
               }}
+              aria-label={`Flipped card: ${flippedCard.rank} of ${flippedCard.suit}`}
             >
               <div className="card-content">
                 <div className="card-corner top-left">
@@ -690,7 +831,7 @@ const WeaponChest = ({ gameData, onComplete, playSound }) => {
           )}
         </div>
 
-        <div className="previous-cards">
+        <div className="previous-cards" aria-label="Previously flipped cards">
           {previousCards.map((card, index) => (
             <div
               key={index}
@@ -701,6 +842,7 @@ const WeaponChest = ({ gameData, onComplete, playSound }) => {
                   index * 5
                 }deg)`,
               }}
+              aria-label={`${card.rank} of ${card.suit}`}
             >
               <div className="card-mini-content">
                 <span className="card-mini-rank">{card.rank}</span>
@@ -791,6 +933,7 @@ const WeaponChest = ({ gameData, onComplete, playSound }) => {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             disabled={isCardFlipping}
+            aria-label={`Flip Card (${chestPile.length} remaining)`}
           >
             <span className="button-icon">🎴</span>
             Flip Card ({chestPile.length} remaining)
@@ -804,15 +947,20 @@ const WeaponChest = ({ gameData, onComplete, playSound }) => {
               className="risk-button"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
+              aria-label="Risk Flip for 35 gold or nothing"
             >
               <span className="button-icon">⚠️</span>
               Risk Flip (35 gold or nothing)
             </motion.button>
             <motion.button
-              onClick={() => setFlippingState("end_without_enchant")}
+              onClick={() => {
+                setFlippingState("end_without_enchant");
+                setAccessibilityAnnouncement("Taking the gold and finishing.");
+              }}
               className="safe-button"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
+              aria-label="Take Gold and Finish"
             >
               <span className="button-icon">✅</span>
               Take Gold and Finish
@@ -827,15 +975,20 @@ const WeaponChest = ({ gameData, onComplete, playSound }) => {
               className="risk-button"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
+              aria-label="Flip for Crusader enchantment"
             >
               <span className="button-icon">⚠️</span>
               Flip for Crusader
             </motion.button>
             <motion.button
-              onClick={() => setFlippingState("complete")}
+              onClick={() => {
+                setFlippingState("complete");
+                setAccessibilityAnnouncement("Keeping Fiery enchantment.");
+              }}
               className="safe-button"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
+              aria-label="Keep Fiery Enchant"
             >
               <span className="button-icon">✅</span>
               Keep Fiery Enchant
@@ -849,6 +1002,7 @@ const WeaponChest = ({ gameData, onComplete, playSound }) => {
             className="complete-button"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
+            aria-label="Complete Weapon Chest"
           >
             <span className="button-icon">🎉</span>
             Complete Weapon Chest
@@ -885,6 +1039,11 @@ const WeaponChest = ({ gameData, onComplete, playSound }) => {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Accessibility announcement region */}
+      <div className="sr-only" aria-live="polite" ref={announcementRef}>
+        {accessibilityAnnouncement}
       </div>
 
       <Tooltip id="weapon-tooltip" />

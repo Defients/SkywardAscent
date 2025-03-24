@@ -1,34 +1,356 @@
 import React, { useState, useEffect } from "react";
-import {
-  drawCardFromPeon,
-  SHOP_ITEMS,
-  WEAPONS,
-  ENCHANTMENTS,
-} from "../contexts/GameContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { Tooltip } from "react-tooltip";
-import "../styles/Merchant.css";
+import PlaceholderUtils from "./PlaceholderUtils";
 
-// Import merchant assets
-import merchantBgImg from "../assets/images/rooms/merchant_bg.png";
-import shopkeeperImg from "../assets/images/characters/shopkeeper.png";
-import shopCounterImg from "../assets/images/items/shop_counter.png";
-import goldCoinImg from "../assets/images/items/gold_coin.png";
-import forgeImg from "../assets/images/items/forge.png";
+// Mock data for shop items (would be imported from GameContext in real implementation)
+const SHOP_ITEMS = {
+  health: [
+    {
+      id: "minor_potion",
+      name: "Minor Health Potion [mHP]",
+      description:
+        "Heals 12 health. Use on your turn (costs your roll). Usable between rooms.",
+      price: 40,
+      icon: "🧪",
+      category: "health",
+      rarity: "common",
+      effect: "Restore 12 health to a hero.",
+      useLocation: ["combat", "spire"],
+      limitPerInventory: 0,
+    },
+    {
+      id: "major_potion",
+      name: "Major Health Potion [MHP]",
+      description:
+        "Fully heals a Hero. Use on your turn (costs your roll). Usable between rooms.",
+      price: 70,
+      icon: "🧪",
+      category: "health",
+      rarity: "uncommon",
+      effect: "Fully restore a hero's health.",
+      useLocation: ["combat", "spire"],
+      limitPerInventory: 0,
+    },
+    {
+      id: "heal_max",
+      name: "Full Healing [FH]",
+      description: "Merchant completely heals a hero on the spot.",
+      price: 50,
+      icon: "❤️",
+      category: "health",
+      rarity: "service",
+      effect: "Fully restore a hero's health immediately.",
+      useLocation: ["merchant"],
+      requiresTarget: true,
+      limitPerVisit: 1,
+    },
+    {
+      id: "revive_half",
+      name: "Revive Service (Half) [RS½]",
+      description:
+        "Merchant revives a fallen hero with half health (rounded up).",
+      price: 85,
+      icon: "💫",
+      category: "health",
+      rarity: "service",
+      effect: "Revive a fallen hero with half health.",
+      useLocation: ["merchant"],
+      requiresTarget: true,
+      limitPerVisit: 1,
+    },
+    {
+      id: "revive_full",
+      name: "Revive Service (Full) [RSF]",
+      description: "Merchant revives a fallen hero with full health.",
+      price: 125,
+      icon: "✨",
+      category: "health",
+      rarity: "service",
+      effect: "Revive a fallen hero with full health.",
+      useLocation: ["merchant"],
+      requiresTarget: true,
+      limitPerVisit: 1,
+    },
+    {
+      id: "guardian_angel",
+      name: "Guardian Angel [GA]",
+      description:
+        "If a Hero dies in combat, they are instantly resurrected with half max health.",
+      price: 125,
+      icon: "👼",
+      category: "health",
+      rarity: "rare",
+      effect: "Auto-revive a hero upon death with half health.",
+      useLocation: ["combat"],
+      limitPerInventory: 2,
+    },
+    {
+      id: "health_boost",
+      name: "Health Boost [HB]",
+      description: "Adds +5 health to all heroes immediately.",
+      price: 60,
+      icon: "💗",
+      category: "health",
+      rarity: "service",
+      effect: "All heroes gain +5 health (up to their maximum).",
+      useLocation: ["merchant"],
+      limitPerVisit: 1,
+    },
+  ],
+  consumables: [
+    {
+      id: "lucky_charm",
+      name: "Lucky Charm [LC]",
+      description:
+        "Skip a table tier for Spade room rewards. Limit: 1 per inventory.",
+      price: 42,
+      icon: "🍀",
+      category: "consumable",
+      rarity: "uncommon",
+      effect: "Improves reward rolls in Spade rooms.",
+      useLocation: ["spire"],
+      limitPerInventory: 1,
+    },
+    {
+      id: "mystic_rune",
+      name: "Mystic Rune [MR]",
+      description: "Activate the Hero's spec ability. Limit: 2 per inventory.",
+      price: 50,
+      icon: "🔯",
+      category: "consumable",
+      rarity: "uncommon",
+      effect: "Manually trigger hero specialization ability.",
+      useLocation: ["combat"],
+      limitPerInventory: 2,
+    },
+    {
+      id: "ability_blocker",
+      name: "Ability Blocker [AB]",
+      description:
+        "Negates a monster's special effect (one-time use). Limit: 1 per inventory.",
+      price: 65,
+      icon: "🛡️",
+      category: "consumable",
+      rarity: "rare",
+      effect: "Block a monster's special ability once.",
+      useLocation: ["combat"],
+      limitPerInventory: 1,
+    },
+    {
+      id: "scroll_revival",
+      name: "Scroll of Revival [SoR]",
+      description:
+        "Revives a Hero to half health (rounded up). Only usable between rooms. Limit: 2 per inventory.",
+      price: 80,
+      icon: "📜",
+      category: "consumable",
+      rarity: "rare",
+      effect: "Revive a fallen hero outside of combat.",
+      useLocation: ["spire"],
+      limitPerInventory: 2,
+    },
+    {
+      id: "toxic_scroll",
+      name: "Toxic Scroll [TS]",
+      description: "Apply the Toxic enchantment to any weapon.",
+      price: 35,
+      icon: "☣️",
+      category: "consumable",
+      rarity: "uncommon",
+      effect: "Apply Toxic enchantment to a weapon.",
+      useLocation: ["spire"],
+      limitPerInventory: 1,
+    },
+    {
+      id: "fiery_scroll",
+      name: "Fiery Scroll [FS]",
+      description: "Apply the Fiery enchantment to any weapon.",
+      price: 55,
+      icon: "🔥",
+      category: "consumable",
+      rarity: "uncommon",
+      effect: "Apply Fiery enchantment to a weapon.",
+      useLocation: ["spire"],
+      limitPerInventory: 1,
+    },
+  ],
+  gear: [
+    {
+      id: "amulet_nullification",
+      name: "Amulet of Nullification [AoN]",
+      description:
+        "Negates a monster's special effect once per combat. Limit: 1 per party.",
+      price: 110,
+      icon: "📿",
+      category: "gear",
+      rarity: "epic",
+      effect: "Block a monster's special ability once per combat.",
+      useLocation: ["combat"],
+      limitPerInventory: 1,
+      limitPerParty: 1,
+    },
+    {
+      id: "permanent_attached_card",
+      name: "Permanent Attached Card [PAC]",
+      description:
+        "Flip the next Peon card and attach it to a Hero (remains post-combat). Limit: 1 per Hero.",
+      price: 50,
+      icon: "🃏",
+      category: "gear",
+      rarity: "uncommon",
+      effect: "Permanently attach a Peon card to a hero.",
+      useLocation: ["spire"],
+      requiresTarget: true,
+      limitPerHero: 1,
+    },
+    {
+      id: "fortune_amulet",
+      name: "Fortune Amulet [FA]",
+      description: "Gain +15 gold after each combat. Limit: 1 per party.",
+      price: 130,
+      icon: "💰",
+      category: "gear",
+      rarity: "rare",
+      effect: "Provides bonus gold after every combat.",
+      useLocation: ["passive"],
+      limitPerParty: 1,
+    },
+    {
+      id: "divine_protection",
+      name: "Divine Protection [DP]",
+      description:
+        "Prevent the first 2 damage from every monster attack. Limit: 1 per hero.",
+      price: 95,
+      icon: "🛡️",
+      category: "gear",
+      rarity: "rare",
+      effect: "Reduces all incoming damage by 2.",
+      useLocation: ["passive"],
+      limitPerHero: 1,
+    },
+  ],
+};
 
-const Merchant = ({ gameData, onComplete, playSound }) => {
+// Mock enchantments data
+const ENCHANTMENTS = {
+  fortune: {
+    name: "Fortune's Favor",
+    effect: "On a roll of 6, immediately roll again for +7g bonus. Can chain.",
+    icon: "🍀",
+    color: "#ffff99",
+    description:
+      "This enchantment brings tremendous luck to the wielder, creating opportunities for gold-finding with perfect strikes.",
+  },
+  crusader: {
+    name: "Crusader",
+    effect: "Rolling a 5 grants immediate use of the Hero's ability.",
+    icon: "✝️",
+    color: "#ffffff",
+    description:
+      "A holy enchantment that empowers the wielder to tap into their special abilities more frequently.",
+  },
+  fiery: {
+    name: "Fiery",
+    effect: "Rolls 3–4 get +2 extra damage.",
+    icon: "🔥",
+    color: "#ff6600",
+    description:
+      "This weapon burns with magical flame, causing additional burn damage on medium-power strikes.",
+  },
+  noxious: {
+    name: "Noxious",
+    effect: "Rolls 1–4 gain +1 extra damage.",
+    icon: "☠️",
+    color: "#66ff33",
+    description:
+      "The weapon drips with toxic poison, adding venom damage to most attacks.",
+  },
+  toxic: {
+    name: "Toxic",
+    effect: "Rolls 1–2 gain +1 extra damage.",
+    icon: "🧪",
+    color: "#00cc66",
+    description:
+      "A less potent but still effective poison coating that improves weaker attacks.",
+  },
+};
+
+// Create placeholder images as we don't have access to the actual asset files
+const createPlaceholder = (text, width = 200, height = 200) => {
+  return PlaceholderUtils.createPlaceholder(text, width, height);
+};
+
+// Sample weapon rarities
+const WEAPON_RARITIES = ["common", "rare", "epic", "legendary"];
+
+const Merchant = ({ gameData = {}, onComplete, playSound }) => {
+  // Use default mock data if gameData isn't provided
+  const defaultGameData = {
+    heroes: [
+      {
+        id: 1,
+        class: "Bladedancer",
+        specialization: "Shadowblade",
+        health: 14,
+        maxHealth: 17,
+        weapon: {
+          name: "Serpent's Kiss",
+          rarity: "common",
+          icon: "🗡️",
+        },
+      },
+      {
+        id: 2,
+        class: "Manipulator",
+        specialization: "Timebender",
+        health: 12,
+        maxHealth: 17,
+        weapon: null,
+      },
+      {
+        id: 3,
+        class: "Guardian",
+        specialization: "Sentinel",
+        health: 0, // Fallen hero
+        maxHealth: 18,
+        weapon: {
+          name: "Stargazer Spear",
+          rarity: "common",
+          enchant: "fiery",
+        },
+      },
+    ],
+    gold: 150,
+    inventory: [
+      {
+        id: "minor_potion",
+        name: "Minor Health Potion",
+        icon: "🧪",
+        type: "potion",
+      },
+      {
+        id: "mystic_rune",
+        name: "Mystic Rune",
+        icon: "🔯",
+        type: "consumable",
+      },
+    ],
+    currentTier: 1,
+  };
+
+  const data = Object.keys(gameData).length > 0 ? gameData : defaultGameData;
+
   const [selectedTab, setSelectedTab] = useState("health");
   const [selectedItem, setSelectedItem] = useState(null);
   const [targetHero, setTargetHero] = useState(null);
   const [message, setMessage] = useState(
     "Welcome to the Merchant! What would you like to purchase?"
   );
-  const [gold, setGold] = useState(gameData.gold);
-  const [inventory, setInventory] = useState([...gameData.inventory]);
-  const [heroes, setHeroes] = useState([...gameData.heroes]);
+  const [gold, setGold] = useState(data.gold);
+  const [inventory, setInventory] = useState([...data.inventory]);
+  const [heroes, setHeroes] = useState([...data.heroes]);
   const [merchantItems, setMerchantItems] = useState({});
-  const [showPurchaseConfirmation, setShowPurchaseConfirmation] =
-    useState(false);
   const [purchaseState, setPurchaseState] = useState("browsing"); // browsing, selecting_hero, confirming, purchased
   const [showItemDetail, setShowItemDetail] = useState(null);
   const [shopkeeperDialogue, setShopkeeperDialogue] = useState(
@@ -43,6 +365,13 @@ const Merchant = ({ gameData, onComplete, playSound }) => {
   const [selectedEnchantment, setSelectedEnchantment] = useState(null);
   const [purchaseEffect, setPurchaseEffect] = useState(null);
   const [itemsBoughtCount, setItemsBoughtCount] = useState(0);
+
+  // Create placeholder images
+  const shopkeeperImg = createPlaceholder("Shopkeeper", 200, 300);
+  const shopCounterImg = createPlaceholder("Shop Counter", 400, 100);
+  const goldCoinImg = createPlaceholder("Gold Coin", 30, 30);
+  const forgeImg = createPlaceholder("Forge", 300, 200);
+  const merchantBgImg = createPlaceholder("Merchant Background", 1200, 800);
 
   // Define shopkeeper dialogues
   function getRandomDialogue() {
@@ -92,7 +421,7 @@ const Merchant = ({ gameData, onComplete, playSound }) => {
       // Filter items based on tier
       tierItems[category] = allItems[category].filter((item) => {
         // Check tier restrictions
-        if (item.minTier && item.minTier > gameData.currentTier) {
+        if (item.minTier && item.minTier > data.currentTier) {
           return false;
         }
 
@@ -148,7 +477,7 @@ const Merchant = ({ gameData, onComplete, playSound }) => {
     });
 
     // Epic weapons available from tier 2+
-    if (gameData.currentTier >= 2) {
+    if (data.currentTier >= 2) {
       tierItems.weapons.push({
         id: "epic_weapon",
         name: "Epic Weapon",
@@ -162,7 +491,7 @@ const Merchant = ({ gameData, onComplete, playSound }) => {
     }
 
     // Legendary weapons available from tier 3+
-    if (gameData.currentTier >= 3) {
+    if (data.currentTier >= 3) {
       tierItems.weapons.push({
         id: "legendary_weapon",
         name: "Legendary Weapon",
@@ -181,7 +510,7 @@ const Merchant = ({ gameData, onComplete, playSound }) => {
         id: "weapon_upgrade",
         name: "Weapon Upgrade",
         description: "Upgrade your weapon to the next rarity level.",
-        price: calculateUpgradePrice("common"),
+        price: 85,
         icon: "🔨",
         category: "upgrade",
         requiresTarget: true,
@@ -207,13 +536,13 @@ const Merchant = ({ gameData, onComplete, playSound }) => {
   const calculateUpgradePrice = (currentRarity) => {
     switch (currentRarity) {
       case "common":
-        return 50;
+        return 85;
       case "rare":
-        return 90;
+        return 120;
       case "epic":
-        return 110;
+        return 180;
       default:
-        return 50;
+        return 85;
     }
   };
 
@@ -341,12 +670,12 @@ const Merchant = ({ gameData, onComplete, playSound }) => {
       }
 
       // Check tier restrictions
-      if (hero.weapon.rarity === "epic" && gameData.currentTier < 3) {
+      if (hero.weapon.rarity === "epic" && data.currentTier < 3) {
         setMessage(`Epic weapons can only be upgraded to Legendary in Tier 3.`);
         return;
       }
 
-      if (hero.weapon.rarity === "rare" && gameData.currentTier < 2) {
+      if (hero.weapon.rarity === "rare" && data.currentTier < 2) {
         setMessage(
           `Rare weapons can only be upgraded to Epic in Tier 2 or higher.`
         );
@@ -394,16 +723,11 @@ const Merchant = ({ gameData, onComplete, playSound }) => {
 
   // Get next rarity level
   const getNextRarity = (currentRarity) => {
-    switch (currentRarity) {
-      case "common":
-        return "rare";
-      case "rare":
-        return "epic";
-      case "epic":
-        return "legendary";
-      default:
-        return "rare";
+    const rarityIndex = WEAPON_RARITIES.indexOf(currentRarity);
+    if (rarityIndex < WEAPON_RARITIES.length - 1) {
+      return WEAPON_RARITIES[rarityIndex + 1];
     }
+    return currentRarity;
   };
 
   // Complete the purchase
@@ -519,73 +843,112 @@ const Merchant = ({ gameData, onComplete, playSound }) => {
 
     // Update hero's weapon
     const updatedHeroes = [...heroes];
-    const heroIndex = updatedHeroes.indexOf(forgeHero);
+    const heroIndex = updatedHeroes.findIndex((h) => h.id === forgeHero.id);
 
     if (heroIndex >= 0) {
-      // Get a random weapon of the new rarity
-      const weaponPool = WEAPONS[forgeUpgrade.to].filter(
-        (w) => w.class === forgeHero.class
+      // Create a new upgraded weapon
+      const newWeapon = {
+        name: getNewWeaponName(forgeHero.class, forgeUpgrade.to),
+        rarity: forgeUpgrade.to,
+        // Keep the enchantment if it exists
+        enchant: updatedHeroes[heroIndex].weapon?.enchant,
+        icon: getWeaponIcon(forgeUpgrade.to),
+      };
+
+      updatedHeroes[heroIndex].weapon = newWeapon;
+      setHeroes(updatedHeroes);
+
+      // Add to transaction history
+      setTransactionHistory([
+        ...transactionHistory,
+        {
+          item: `Weapon Upgrade (${forgeUpgrade.from} → ${forgeUpgrade.to})`,
+          price: forgeUpgrade.price,
+          target: forgeHero.class,
+          timestamp: new Date().toLocaleTimeString(),
+        },
+      ]);
+
+      // Show upgrade effect
+      setPurchaseEffect({
+        type: "forge",
+        name: `Upgraded to ${newWeapon.name}`,
+        target: forgeHero.class,
+      });
+
+      setTimeout(() => {
+        setPurchaseEffect(null);
+      }, 2000);
+
+      // Update message
+      setMessage(
+        `${forgeHero.class}'s weapon has been upgraded to ${newWeapon.name}!`
       );
 
-      if (weaponPool.length > 0) {
-        const newWeapon =
-          weaponPool[Math.floor(Math.random() * weaponPool.length)];
+      // Update shopkeeper dialogue
+      setShopkeeperDialogue(
+        "The forge has served you well! That weapon will strike fear into your enemies!"
+      );
+      setShowDialogue(true);
 
-        // Keep the enchantment if it exists
-        const enchant = updatedHeroes[heroIndex].weapon.enchant;
-
-        updatedHeroes[heroIndex].weapon = {
-          ...newWeapon,
-          rarity: forgeUpgrade.to,
-          enchant: enchant,
-        };
-
-        setHeroes(updatedHeroes);
-
-        // Add to transaction history
-        setTransactionHistory([
-          ...transactionHistory,
-          {
-            item: `Weapon Upgrade (${forgeUpgrade.from} → ${forgeUpgrade.to})`,
-            price: forgeUpgrade.price,
-            target: forgeHero.class,
-            timestamp: new Date().toLocaleTimeString(),
-          },
-        ]);
-
-        // Show upgrade effect
-        setPurchaseEffect({
-          type: "forge",
-          name: `Upgraded to ${newWeapon.name}`,
-          target: forgeHero.class,
-        });
-
-        setTimeout(() => {
-          setPurchaseEffect(null);
-        }, 2000);
-
-        // Update message
-        setMessage(
-          `${forgeHero.class}'s weapon has been upgraded to ${newWeapon.name}!`
-        );
-
-        // Update shopkeeper dialogue
-        setShopkeeperDialogue(
-          "The forge has served you well! That weapon will strike fear into your enemies!"
-        );
-        setShowDialogue(true);
-
-        // Hide dialogue after a few seconds
-        setTimeout(() => {
-          setShowDialogue(false);
-        }, 3000);
-      }
+      // Hide dialogue after a few seconds
+      setTimeout(() => {
+        setShowDialogue(false);
+      }, 3000);
     }
 
     // Close forge
     setWeaponForgeOpen(false);
     setForgeHero(null);
     setForgeUpgrade(null);
+  };
+
+  // Helper function to get a weapon name based on class and rarity
+  const getNewWeaponName = (heroClass, rarity) => {
+    const weaponNames = {
+      Bladedancer: {
+        common: "Serpent's Kiss",
+        rare: "Moonshadow Shiv",
+        epic: "Shadowtide Reaper",
+        legendary: "Twilight's Kiss",
+      },
+      Manipulator: {
+        common: "Astral Rod",
+        rare: "Voidweaver Enigma",
+        epic: "Celestial Scepter",
+        legendary: "Eternity's Whisper",
+      },
+      Tracker: {
+        common: "Longshot",
+        rare: "Beast Whisperer",
+        epic: "Stormcaller's Embrace",
+        legendary: "Apex Predator",
+      },
+      Guardian: {
+        common: "Stargazer Spear",
+        rare: "Bulwark of Dawn",
+        epic: "Astral Bulwark",
+        legendary: "Divine Aegis",
+      },
+    };
+
+    return weaponNames[heroClass]?.[rarity] || `${rarity} ${heroClass} Weapon`;
+  };
+
+  // Get appropriate icon for weapon rarity
+  const getWeaponIcon = (rarity) => {
+    switch (rarity) {
+      case "common":
+        return "⚔️";
+      case "rare":
+        return "🗡️";
+      case "epic":
+        return "🔱";
+      case "legendary":
+        return "⚡";
+      default:
+        return "⚔️";
+    }
   };
 
   // Cancel the forge upgrade
@@ -640,23 +1003,28 @@ const Merchant = ({ gameData, onComplete, playSound }) => {
         } else if (item.id === "heal_max" && hero) {
           // Fully heal the targeted hero
           const updatedHeroes = [...heroes];
-          const heroIndex = updatedHeroes.indexOf(hero);
-          updatedHeroes[heroIndex].health = updatedHeroes[heroIndex].maxHealth;
-          setHeroes(updatedHeroes);
-          setMessage(`${hero.class} was fully healed!`);
+          const heroIndex = updatedHeroes.findIndex((h) => h.id === hero.id);
+          if (heroIndex >= 0) {
+            updatedHeroes[heroIndex].health =
+              updatedHeroes[heroIndex].maxHealth;
+            setHeroes(updatedHeroes);
+            setMessage(`${hero.class} was fully healed!`);
+          }
         } else if (
           (item.id === "revive_half" || item.id === "revive_full") &&
           hero
         ) {
           // Revive fallen hero
           const updatedHeroes = [...heroes];
-          const heroIndex = updatedHeroes.indexOf(hero);
-          updatedHeroes[heroIndex].health =
-            item.id === "revive_half"
-              ? Math.ceil(updatedHeroes[heroIndex].maxHealth / 2)
-              : updatedHeroes[heroIndex].maxHealth;
-          setHeroes(updatedHeroes);
-          setMessage(`${hero.class} was revived!`);
+          const heroIndex = updatedHeroes.findIndex((h) => h.id === hero.id);
+          if (heroIndex >= 0) {
+            updatedHeroes[heroIndex].health =
+              item.id === "revive_half"
+                ? Math.ceil(updatedHeroes[heroIndex].maxHealth / 2)
+                : updatedHeroes[heroIndex].maxHealth;
+            setHeroes(updatedHeroes);
+            setMessage(`${hero.class} was revived!`);
+          }
         }
         break;
 
@@ -678,22 +1046,10 @@ const Merchant = ({ gameData, onComplete, playSound }) => {
 
       case "gear":
         if (item.id === "permanent_attached_card" && hero) {
-          // Draw a card from the peon pile
-          const card = drawCardFromPeon(gameData.deck.peonPile);
-
-          // Attach it to the hero
-          const updatedHeroes = [...heroes];
-          const heroIndex = updatedHeroes.indexOf(hero);
-
-          // Create a copy of attached cards and add the new one
-          const attachedCards = [...updatedHeroes[heroIndex].attachedCards];
-          attachedCards.push({ ...card, isPermanent: true });
-
-          updatedHeroes[heroIndex].attachedCards = attachedCards;
-
-          setHeroes(updatedHeroes);
+          // In a real implementation, would draw a card from the peon pile
+          // For this demo, we'll just notify about it
           setMessage(
-            `${hero.class} received a permanent ${card.rank}${card.suit} card!`
+            `${hero.class} would receive a permanent attached card from the peon pile.`
           );
         } else {
           // Add gear to inventory
@@ -714,41 +1070,21 @@ const Merchant = ({ gameData, onComplete, playSound }) => {
 
       case "weapon":
         if (hero) {
-          // Get a random weapon of the appropriate rarity
-          const rarity = item.rarity;
-          const weaponPool = WEAPONS[rarity].filter(
-            (w) => w.class === hero.class
-          );
+          // Get a weapon name for the appropriate rarity and class
+          const weaponName = getNewWeaponName(hero.class, item.rarity);
 
-          if (weaponPool.length > 0) {
-            const weapon =
-              weaponPool[Math.floor(Math.random() * weaponPool.length)];
-
-            // Equip the hero
-            const updatedHeroes = [...heroes];
-            const heroIndex = updatedHeroes.indexOf(hero);
+          // Equip the hero
+          const updatedHeroes = [...heroes];
+          const heroIndex = updatedHeroes.findIndex((h) => h.id === hero.id);
+          if (heroIndex >= 0) {
             updatedHeroes[heroIndex].weapon = {
-              ...weapon,
-              rarity: rarity,
+              name: weaponName,
+              rarity: item.rarity,
+              icon: getWeaponIcon(item.rarity),
             };
 
             setHeroes(updatedHeroes);
-            setMessage(`${hero.class} equipped with ${weapon.name}!`);
-          } else {
-            // Fallback if no weapons found
-            const updatedHeroes = [...heroes];
-            const heroIndex = updatedHeroes.indexOf(hero);
-            updatedHeroes[heroIndex].weapon = {
-              name: `${rarity.charAt(0).toUpperCase() + rarity.slice(1)} ${
-                hero.class
-              } Weapon`,
-              effect: "A powerful weapon suited for your class.",
-              rarity: rarity,
-              icon: "⚔️",
-            };
-
-            setHeroes(updatedHeroes);
-            setMessage(`${hero.class} equipped with a ${rarity} weapon!`);
+            setMessage(`${hero.class} equipped with ${weaponName}!`);
           }
         }
         break;
@@ -757,15 +1093,16 @@ const Merchant = ({ gameData, onComplete, playSound }) => {
         if (hero && hero.weapon) {
           // Apply enchantment to weapon
           const updatedHeroes = [...heroes];
-          const heroIndex = updatedHeroes.indexOf(hero);
+          const heroIndex = updatedHeroes.findIndex((h) => h.id === hero.id);
+          if (heroIndex >= 0) {
+            updatedHeroes[heroIndex].weapon = {
+              ...updatedHeroes[heroIndex].weapon,
+              enchant: item.enchantType,
+            };
 
-          updatedHeroes[heroIndex].weapon = {
-            ...updatedHeroes[heroIndex].weapon,
-            enchant: item.enchantType,
-          };
-
-          setHeroes(updatedHeroes);
-          setMessage(`${item.name} applied to ${hero.class}'s weapon!`);
+            setHeroes(updatedHeroes);
+            setMessage(`${item.name} applied to ${hero.class}'s weapon!`);
+          }
         }
         break;
     }
@@ -777,11 +1114,15 @@ const Merchant = ({ gameData, onComplete, playSound }) => {
     if (playSound) playSound();
 
     // Update game state
-    onComplete({
-      gold,
-      inventory,
-      heroes,
-    });
+    if (onComplete) {
+      onComplete({
+        gold,
+        inventory,
+        heroes,
+      });
+    } else {
+      console.log("Shopping completed:", { gold, inventory, heroes });
+    }
   };
 
   // Show item detail
@@ -811,110 +1152,259 @@ const Merchant = ({ gameData, onComplete, playSound }) => {
   return (
     <div
       className="merchant"
-      style={{ backgroundImage: `url(${merchantBgImg})` }}
+      style={{
+        backgroundImage: `url(${merchantBgImg})`,
+        padding: "20px",
+        minHeight: "100vh",
+        backgroundColor: "#16213e",
+        color: "#e1e1e6",
+        fontFamily: "Montserrat, sans-serif",
+      }}
     >
-      <div className="merchant-header">
-        <h2>The Merchant</h2>
-        <div className="merchant-message">{message}</div>
+      <div
+        className="merchant-header"
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          marginBottom: "20px",
+        }}
+      >
+        <h2
+          style={{ margin: "0 0 10px 0", fontSize: "28px", color: "#f0c75e" }}
+        >
+          The Merchant
+        </h2>
+        <div
+          className="merchant-message"
+          style={{
+            backgroundColor: "rgba(0, 0, 0, 0.4)",
+            padding: "10px 15px",
+            borderRadius: "5px",
+            fontSize: "16px",
+            maxWidth: "800px",
+            textAlign: "center",
+          }}
+        >
+          {message}
+        </div>
       </div>
 
-      <div className="shop-layout">
-        <div className="merchant-interface">
-          <div className="merchant-tabs">
-            <button
-              className={`tab ${selectedTab === "health" ? "active" : ""}`}
-              onClick={() => handleTabClick("health")}
-            >
-              <span className="tab-icon">❤️</span>
-              <span className="tab-label">Health & Services</span>
-            </button>
-            <button
-              className={`tab ${selectedTab === "consumables" ? "active" : ""}`}
-              onClick={() => handleTabClick("consumables")}
-            >
-              <span className="tab-icon">🧪</span>
-              <span className="tab-label">Consumables</span>
-            </button>
-            <button
-              className={`tab ${selectedTab === "gear" ? "active" : ""}`}
-              onClick={() => handleTabClick("gear")}
-            >
-              <span className="tab-icon">🎒</span>
-              <span className="tab-label">Gear</span>
-            </button>
-            <button
-              className={`tab ${selectedTab === "weapons" ? "active" : ""}`}
-              onClick={() => handleTabClick("weapons")}
-            >
-              <span className="tab-icon">⚔️</span>
-              <span className="tab-label">Weapons</span>
-            </button>
-            <button
-              className={`tab ${selectedTab === "enchants" ? "active" : ""}`}
-              onClick={() => handleTabClick("enchants")}
-            >
-              <span className="tab-icon">✨</span>
-              <span className="tab-label">Enchants</span>
-            </button>
-            <button
-              className={`tab ${selectedTab === "upgrades" ? "active" : ""}`}
-              onClick={() => handleTabClick("upgrades")}
-            >
-              <span className="tab-icon">🔨</span>
-              <span className="tab-label">Upgrades</span>
-            </button>
+      <div
+        className="shop-layout"
+        style={{
+          display: "flex",
+          gap: "20px",
+          maxWidth: "1200px",
+          margin: "0 auto",
+        }}
+      >
+        <div
+          className="merchant-interface"
+          style={{
+            flex: "3",
+            backgroundColor: "rgba(22, 33, 62, 0.8)",
+            borderRadius: "8px",
+            overflow: "hidden",
+          }}
+        >
+          <div
+            className="merchant-tabs"
+            style={{
+              display: "flex",
+              borderBottom: "1px solid #2a3a5a",
+            }}
+          >
+            {[
+              "health",
+              "consumables",
+              "gear",
+              "weapons",
+              "enchants",
+              "upgrades",
+            ].map((tab) => (
+              <button
+                key={tab}
+                className={`tab ${selectedTab === tab ? "active" : ""}`}
+                onClick={() => handleTabClick(tab)}
+                style={{
+                  padding: "12px 16px",
+                  backgroundColor:
+                    selectedTab === tab ? "#2a3a5a" : "transparent",
+                  border: "none",
+                  color: selectedTab === tab ? "#f0c75e" : "#e1e1e6",
+                  fontWeight: selectedTab === tab ? "bold" : "normal",
+                  cursor: "pointer",
+                  transition: "background-color 0.2s",
+                  flex: "1",
+                  fontSize: "14px",
+                }}
+              >
+                <span className="tab-icon" style={{ marginRight: "8px" }}>
+                  {tab === "health"
+                    ? "❤️"
+                    : tab === "consumables"
+                    ? "🧪"
+                    : tab === "gear"
+                    ? "🎒"
+                    : tab === "weapons"
+                    ? "⚔️"
+                    : tab === "enchants"
+                    ? "✨"
+                    : "🔨"}
+                </span>
+                <span className="tab-label">
+                  {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                </span>
+              </button>
+            ))}
           </div>
 
-          <div className="merchant-items">
+          <div
+            className="merchant-items"
+            style={{
+              padding: "20px",
+              display: "flex",
+              flexDirection: "column",
+              gap: "12px",
+              maxHeight: "400px",
+              overflowY: "auto",
+            }}
+          >
             {merchantItems[selectedTab] &&
             merchantItems[selectedTab].length > 0 ? (
               merchantItems[selectedTab].map((item, index) => (
-                <motion.div
+                <div
                   key={index}
                   className={`merchant-item ${
                     item.disabled ? "disabled" : ""
                   } ${selectedItem === item ? "selected" : ""}`}
-                  whileHover={!item.disabled ? { scale: 1.03, y: -2 } : {}}
-                  whileTap={!item.disabled ? { scale: 0.97 } : {}}
                   onClick={() => selectItem(item)}
                   onMouseEnter={() => showItemDetails(item)}
                   onMouseLeave={hideItemDetails}
+                  style={{
+                    display: "flex",
+                    backgroundColor:
+                      selectedItem === item
+                        ? "rgba(240, 199, 94, 0.2)"
+                        : "rgba(42, 58, 90, 0.5)",
+                    padding: "12px",
+                    borderRadius: "6px",
+                    cursor: item.disabled ? "not-allowed" : "pointer",
+                    opacity: item.disabled ? 0.5 : 1,
+                    transition: "background-color 0.2s",
+                    alignItems: "center",
+                    gap: "10px",
+                  }}
                 >
-                  <div className="item-icon">{item.icon}</div>
-                  <div className="item-details">
-                    <h3 className="item-name">{item.name}</h3>
-                    <p className="item-description">{item.description}</p>
+                  <div
+                    className="item-icon"
+                    style={{
+                      fontSize: "24px",
+                      width: "40px",
+                      height: "40px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      backgroundColor: "rgba(0, 0, 0, 0.3)",
+                      borderRadius: "6px",
+                    }}
+                  >
+                    {item.icon}
                   </div>
-                  <div className="item-price">
-                    <img
-                      src={goldCoinImg}
-                      alt="Gold"
-                      className="gold-icon-img"
-                    />
+                  <div className="item-details" style={{ flex: "1" }}>
+                    <h3
+                      className="item-name"
+                      style={{
+                        margin: "0 0 5px 0",
+                        fontSize: "16px",
+                        fontWeight: "bold",
+                      }}
+                    >
+                      {item.name}
+                    </h3>
+                    <p
+                      className="item-description"
+                      style={{
+                        margin: "0",
+                        fontSize: "14px",
+                        color: "#b8b8c0",
+                      }}
+                    >
+                      {item.description}
+                    </p>
+                  </div>
+                  <div
+                    className="item-price"
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      fontWeight: "bold",
+                      color: gold >= item.price ? "#f0c75e" : "#ff5555",
+                    }}
+                  >
+                    <span className="gold-icon" style={{ marginRight: "5px" }}>
+                      💰
+                    </span>
                     <span className="price-amount">{item.price}</span>
                   </div>
-                </motion.div>
+                </div>
               ))
             ) : (
-              <div className="no-items-message">
+              <div
+                className="no-items-message"
+                style={{
+                  textAlign: "center",
+                  padding: "30px",
+                  color: "#8888a0",
+                }}
+              >
                 No items available in this category
               </div>
             )}
           </div>
 
           {/* Shop counter with shopkeeper */}
-          <div className="shop-counter">
-            <img
-              src={shopCounterImg}
-              alt="Shop Counter"
+          <div
+            className="shop-counter"
+            style={{
+              position: "relative",
+              borderTop: "1px solid #2a3a5a",
+              padding: "20px",
+              minHeight: "120px",
+            }}
+          >
+            <div
               className="counter-img"
-            />
-            <div className="shopkeeper">
-              <img
-                src={shopkeeperImg}
-                alt="Shopkeeper"
+              style={{
+                width: "100%",
+                height: "30px",
+                backgroundColor: "#2a3a5a",
+                borderRadius: "5px 5px 0 0",
+                position: "absolute",
+                bottom: "70px",
+                left: "0",
+              }}
+            ></div>
+            <div
+              className="shopkeeper"
+              style={{
+                position: "absolute",
+                bottom: "70px",
+                right: "50px",
+                width: "100px",
+                height: "150px",
+              }}
+            >
+              <div
                 className="shopkeeper-img"
-              />
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  backgroundColor: "#4a5a7a",
+                  borderRadius: "8px 8px 0 0",
+                }}
+              ></div>
 
               <AnimatePresence>
                 {showDialogue && (
@@ -924,8 +1414,33 @@ const Merchant = ({ gameData, onComplete, playSound }) => {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -10, scale: 0.8 }}
                     transition={{ duration: 0.3 }}
+                    style={{
+                      position: "absolute",
+                      top: "-80px",
+                      right: "-20px",
+                      backgroundColor: "white",
+                      color: "#333",
+                      padding: "10px 15px",
+                      borderRadius: "10px",
+                      maxWidth: "250px",
+                      boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
+                      zIndex: 10,
+                    }}
                   >
-                    <p>{shopkeeperDialogue}</p>
+                    <p style={{ margin: "0", fontSize: "14px" }}>
+                      {shopkeeperDialogue}
+                    </p>
+                    <div
+                      style={{
+                        position: "absolute",
+                        bottom: "-10px",
+                        right: "30px",
+                        width: "20px",
+                        height: "20px",
+                        backgroundColor: "white",
+                        transform: "rotate(45deg)",
+                      }}
+                    ></div>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -933,41 +1448,97 @@ const Merchant = ({ gameData, onComplete, playSound }) => {
           </div>
         </div>
 
-        <div className="merchant-sidebar">
-          <div className="gold-display">
-            <img src={goldCoinImg} alt="Gold" className="gold-icon-img" />
+        <div
+          className="merchant-sidebar"
+          style={{
+            flex: "1",
+            display: "flex",
+            flexDirection: "column",
+            gap: "15px",
+          }}
+        >
+          <div
+            className="gold-display"
+            style={{
+              backgroundColor: "rgba(240, 199, 94, 0.2)",
+              padding: "10px 15px",
+              borderRadius: "6px",
+              display: "flex",
+              alignItems: "center",
+              fontWeight: "bold",
+              fontSize: "18px",
+              color: "#f0c75e",
+            }}
+          >
+            <span
+              className="gold-icon"
+              style={{ marginRight: "10px", fontSize: "24px" }}
+            >
+              💰
+            </span>
             <span className="gold-amount">{gold}</span>
           </div>
 
-          <div className="heroes-list">
-            <h3>Heroes</h3>
+          <div
+            className="heroes-list"
+            style={{
+              backgroundColor: "rgba(22, 33, 62, 0.8)",
+              borderRadius: "8px",
+              padding: "15px",
+            }}
+          >
+            <h3 style={{ margin: "0 0 15px 0", fontSize: "18px" }}>Heroes</h3>
             {heroes.map((hero, index) => (
-              <motion.div
+              <div
                 key={index}
                 className={`hero-entry ${
                   targetHero === hero ? "selected" : ""
                 } ${purchaseState === "selecting_hero" ? "selectable" : ""} ${
                   hero.health <= 0 ? "fallen" : ""
                 }`}
-                whileHover={
-                  purchaseState === "selecting_hero" && hero.health > 0
-                    ? { scale: 1.03, x: 5 }
-                    : {}
-                }
-                whileTap={
-                  purchaseState === "selecting_hero" && hero.health > 0
-                    ? { scale: 0.97 }
-                    : {}
-                }
                 onClick={() =>
                   purchaseState === "selecting_hero" && hero.health > 0
                     ? selectHero(hero)
                     : null
                 }
+                style={{
+                  padding: "12px",
+                  backgroundColor:
+                    targetHero === hero
+                      ? "rgba(240, 199, 94, 0.2)"
+                      : "rgba(42, 58, 90, 0.5)",
+                  marginBottom: "10px",
+                  borderRadius: "6px",
+                  cursor:
+                    purchaseState === "selecting_hero" && hero.health > 0
+                      ? "pointer"
+                      : "default",
+                  opacity: hero.health <= 0 ? 0.6 : 1,
+                  transition: "all 0.2s",
+                }}
               >
-                <div className="hero-header">
-                  <span className="hero-name">{hero.class}</span>
-                  <span className="hero-health">
+                <div
+                  className="hero-header"
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    marginBottom: "8px",
+                  }}
+                >
+                  <span className="hero-name" style={{ fontWeight: "bold" }}>
+                    {hero.class}
+                  </span>
+                  <span
+                    className="hero-health"
+                    style={{
+                      color:
+                        hero.health <= 0
+                          ? "#ff5555"
+                          : hero.health < hero.maxHealth / 2
+                          ? "#ffaa55"
+                          : "#55ff7f",
+                    }}
+                  >
                     {hero.health > 0
                       ? `${hero.health}/${hero.maxHealth}`
                       : "Fallen"}
@@ -978,6 +1549,23 @@ const Merchant = ({ gameData, onComplete, playSound }) => {
                     className={`hero-weapon ${hero.weapon.rarity}`}
                     data-tooltip-id="weapon-tooltip"
                     data-tooltip-content={hero.weapon.effect}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      fontSize: "14px",
+                      padding: "5px 8px",
+                      backgroundColor: "rgba(0, 0, 0, 0.3)",
+                      borderRadius: "4px",
+                      color:
+                        hero.weapon.rarity === "legendary"
+                          ? "#ffaa33"
+                          : hero.weapon.rarity === "epic"
+                          ? "#bb55ff"
+                          : hero.weapon.rarity === "rare"
+                          ? "#55aaff"
+                          : "#ffffff",
+                    }}
                   >
                     <span className="weapon-icon">
                       {hero.weapon.icon || "⚔️"}
@@ -988,6 +1576,7 @@ const Merchant = ({ gameData, onComplete, playSound }) => {
                         className="weapon-enchant"
                         style={{
                           color: ENCHANTMENTS[hero.weapon.enchant]?.color,
+                          marginLeft: "auto",
                         }}
                       >
                         {ENCHANTMENTS[hero.weapon.enchant]?.icon}
@@ -996,7 +1585,21 @@ const Merchant = ({ gameData, onComplete, playSound }) => {
                   </div>
                 )}
                 {showEnchantment && targetHero === hero && (
-                  <div className="enchantment-preview">
+                  <div
+                    className="enchantment-preview"
+                    style={{
+                      marginTop: "8px",
+                      padding: "5px 8px",
+                      backgroundColor: "rgba(0, 0, 0, 0.3)",
+                      borderRadius: "4px",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      border: `1px dashed ${
+                        ENCHANTMENTS[selectedEnchantment]?.color || "#ffffff"
+                      }`,
+                    }}
+                  >
                     <div
                       className="preview-enchant"
                       style={{
@@ -1005,17 +1608,36 @@ const Merchant = ({ gameData, onComplete, playSound }) => {
                     >
                       {ENCHANTMENTS[selectedEnchantment]?.icon}
                     </div>
+                    <span style={{ fontSize: "12px", fontStyle: "italic" }}>
+                      Preview
+                    </span>
                   </div>
                 )}
-              </motion.div>
+              </div>
             ))}
           </div>
 
-          <div className="inventory-preview">
-            <h3>Inventory</h3>
+          <div
+            className="inventory-preview"
+            style={{
+              backgroundColor: "rgba(22, 33, 62, 0.8)",
+              borderRadius: "8px",
+              padding: "15px",
+            }}
+          >
+            <h3 style={{ margin: "0 0 15px 0", fontSize: "18px" }}>
+              Inventory
+            </h3>
             <div className="inventory-items">
               {inventory.length > 0 ? (
-                <div className="inventory-grid">
+                <div
+                  className="inventory-grid"
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(5, 1fr)",
+                    gap: "8px",
+                  }}
+                >
                   {inventory.map((item, index) => (
                     <div
                       key={index}
@@ -1024,60 +1646,146 @@ const Merchant = ({ gameData, onComplete, playSound }) => {
                       data-tooltip-content={
                         item.effect || item.description || item.name
                       }
+                      style={{
+                        width: "36px",
+                        height: "36px",
+                        backgroundColor: "rgba(42, 58, 90, 0.8)",
+                        borderRadius: "4px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: "20px",
+                      }}
                     >
                       <span className="item-icon">{item.icon}</span>
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="empty-inventory">No items in inventory</p>
+                <p
+                  className="empty-inventory"
+                  style={{
+                    textAlign: "center",
+                    color: "#8888a0",
+                    padding: "10px",
+                  }}
+                >
+                  No items in inventory
+                </p>
               )}
             </div>
           </div>
 
-          <div className="transaction-history">
-            <h3>Recent Purchases</h3>
+          <div
+            className="transaction-history"
+            style={{
+              backgroundColor: "rgba(22, 33, 62, 0.8)",
+              borderRadius: "8px",
+              padding: "15px",
+              flex: "1",
+              minHeight: "120px",
+            }}
+          >
+            <h3 style={{ margin: "0 0 15px 0", fontSize: "18px" }}>
+              Recent Purchases
+            </h3>
             <div className="transactions">
               {transactionHistory.length > 0 ? (
-                <div className="transaction-list">
+                <div
+                  className="transaction-list"
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "8px",
+                  }}
+                >
                   {transactionHistory.slice(-3).map((transaction, index) => (
-                    <div key={index} className="transaction-entry">
+                    <div
+                      key={index}
+                      className="transaction-entry"
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        padding: "8px",
+                        backgroundColor: "rgba(42, 58, 90, 0.5)",
+                        borderRadius: "4px",
+                        fontSize: "14px",
+                      }}
+                    >
                       <div className="transaction-details">
-                        <span className="transaction-item">
+                        <span
+                          className="transaction-item"
+                          style={{ fontWeight: "bold" }}
+                        >
                           {transaction.item}
                         </span>
                         {transaction.target && (
-                          <span className="transaction-target">
+                          <span
+                            className="transaction-target"
+                            style={{
+                              marginLeft: "5px",
+                              fontSize: "12px",
+                              color: "#b8b8c0",
+                            }}
+                          >
                             for {transaction.target}
                           </span>
                         )}
                       </div>
-                      <div className="transaction-price">
-                        <img
-                          src={goldCoinImg}
-                          alt="Gold"
-                          className="small-gold-icon"
-                        />
+                      <div
+                        className="transaction-price"
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          color: "#f0c75e",
+                        }}
+                      >
+                        <span
+                          className="gold-icon"
+                          style={{ marginRight: "5px" }}
+                        >
+                          💰
+                        </span>
                         <span className="price-value">{transaction.price}</span>
                       </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="no-transactions">No purchases yet</p>
+                <p
+                  className="no-transactions"
+                  style={{
+                    textAlign: "center",
+                    color: "#8888a0",
+                    padding: "10px",
+                  }}
+                >
+                  No purchases yet
+                </p>
               )}
             </div>
           </div>
 
-          <motion.button
+          <button
             className="finish-button"
             onClick={finishShopping}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            style={{
+              backgroundColor: "#f0c75e",
+              color: "#16213e",
+              border: "none",
+              padding: "12px 20px",
+              borderRadius: "6px",
+              fontWeight: "bold",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "10px",
+            }}
           >
             <span className="button-icon">🚪</span>
             Leave Shop
-          </motion.button>
+          </button>
         </div>
       </div>
 
@@ -1089,6 +1797,18 @@ const Merchant = ({ gameData, onComplete, playSound }) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            style={{
+              position: "fixed",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: "rgba(0, 0, 0, 0.7)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              zIndex: 100,
+            }}
           >
             <motion.div
               className="confirmation-card"
@@ -1096,34 +1816,139 @@ const Merchant = ({ gameData, onComplete, playSound }) => {
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: 50, opacity: 0 }}
               transition={{ duration: 0.3 }}
+              style={{
+                backgroundColor: "#16213e",
+                borderRadius: "8px",
+                padding: "20px",
+                width: "100%",
+                maxWidth: "500px",
+                boxShadow: "0 10px 25px rgba(0, 0, 0, 0.5)",
+              }}
             >
-              <h3>Confirm Purchase</h3>
+              <h3
+                style={{
+                  textAlign: "center",
+                  margin: "0 0 20px 0",
+                  color: "#f0c75e",
+                  fontSize: "24px",
+                }}
+              >
+                Confirm Purchase
+              </h3>
 
-              <div className="purchase-details">
-                <div className="item-preview">
-                  <div className="preview-icon">{selectedItem.icon}</div>
-                  <div className="preview-name">{selectedItem.name}</div>
+              <div
+                className="purchase-details"
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: "15px",
+                  margin: "20px 0",
+                }}
+              >
+                <div
+                  className="item-preview"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "15px",
+                  }}
+                >
+                  <div
+                    className="preview-icon"
+                    style={{
+                      fontSize: "32px",
+                      width: "60px",
+                      height: "60px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      backgroundColor: "rgba(240, 199, 94, 0.2)",
+                      borderRadius: "8px",
+                    }}
+                  >
+                    {selectedItem.icon}
+                  </div>
+                  <div
+                    className="preview-name"
+                    style={{
+                      fontSize: "20px",
+                      fontWeight: "bold",
+                    }}
+                  >
+                    {selectedItem.name}
+                  </div>
                 </div>
 
                 {targetHero && (
-                  <div className="target-preview">
-                    <p>for {targetHero.class}</p>
+                  <div
+                    className="target-preview"
+                    style={{
+                      backgroundColor: "rgba(42, 58, 90, 0.5)",
+                      padding: "10px 15px",
+                      borderRadius: "6px",
+                      width: "100%",
+                      textAlign: "center",
+                    }}
+                  >
+                    <p style={{ margin: "0 0 10px 0" }}>
+                      for {targetHero.class}
+                    </p>
                     {showEnchantment && (
-                      <div className="enchantment-preview-large">
-                        <div className="preview-weapon">
-                          <span className="weapon-name">
+                      <div
+                        className="enchantment-preview-large"
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "center",
+                          gap: "10px",
+                        }}
+                      >
+                        <div
+                          className="preview-weapon"
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "8px",
+                          }}
+                        >
+                          <span
+                            className="weapon-name"
+                            style={{
+                              padding: "5px 10px",
+                              backgroundColor: "rgba(0, 0, 0, 0.3)",
+                              borderRadius: "4px",
+                              color:
+                                targetHero.weapon.rarity === "legendary"
+                                  ? "#ffaa33"
+                                  : targetHero.weapon.rarity === "epic"
+                                  ? "#bb55ff"
+                                  : targetHero.weapon.rarity === "rare"
+                                  ? "#55aaff"
+                                  : "#ffffff",
+                            }}
+                          >
                             {targetHero.weapon.name}
                           </span>
                           <span
                             className="preview-enchant"
                             style={{
                               color: ENCHANTMENTS[selectedEnchantment]?.color,
+                              fontSize: "24px",
                             }}
                           >
                             {ENCHANTMENTS[selectedEnchantment]?.icon}
                           </span>
                         </div>
-                        <p className="enchant-effect">
+                        <p
+                          className="enchant-effect"
+                          style={{
+                            margin: "0",
+                            fontSize: "14px",
+                            fontStyle: "italic",
+                            color: "#b8b8c0",
+                          }}
+                        >
                           {ENCHANTMENTS[selectedEnchantment]?.effect}
                         </p>
                       </div>
@@ -1131,29 +1956,71 @@ const Merchant = ({ gameData, onComplete, playSound }) => {
                   </div>
                 )}
 
-                <div className="price-preview">
-                  <img src={goldCoinImg} alt="Gold" className="gold-icon-img" />
+                <div
+                  className="price-preview"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "10px",
+                    padding: "10px 20px",
+                    backgroundColor: "rgba(240, 199, 94, 0.2)",
+                    borderRadius: "6px",
+                    fontWeight: "bold",
+                    fontSize: "18px",
+                    color: "#f0c75e",
+                  }}
+                >
+                  <span className="gold-icon" style={{ fontSize: "24px" }}>
+                    💰
+                  </span>
                   <span className="preview-price">{selectedItem.price}</span>
                 </div>
               </div>
 
-              <div className="confirmation-buttons">
-                <motion.button
+              <div
+                className="confirmation-buttons"
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  gap: "15px",
+                  marginTop: "20px",
+                }}
+              >
+                <button
                   className="cancel-button"
                   onClick={cancelPurchase}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                  style={{
+                    flex: 1,
+                    padding: "12px",
+                    backgroundColor: "rgba(255, 85, 85, 0.2)",
+                    color: "#ff5555",
+                    border: "1px solid #ff5555",
+                    borderRadius: "6px",
+                    cursor: "pointer",
+                    fontSize: "16px",
+                    transition: "all 0.2s",
+                  }}
                 >
                   Cancel
-                </motion.button>
-                <motion.button
+                </button>
+                <button
                   className="confirm-button"
                   onClick={purchaseItem}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                  style={{
+                    flex: 1,
+                    padding: "12px",
+                    backgroundColor: "#f0c75e",
+                    color: "#16213e",
+                    border: "none",
+                    borderRadius: "6px",
+                    fontWeight: "bold",
+                    cursor: "pointer",
+                    fontSize: "16px",
+                    transition: "all 0.2s",
+                  }}
                 >
                   Confirm
-                </motion.button>
+                </button>
               </div>
             </motion.div>
           </motion.div>
@@ -1168,6 +2035,18 @@ const Merchant = ({ gameData, onComplete, playSound }) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            style={{
+              position: "fixed",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: "rgba(0, 0, 0, 0.7)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              zIndex: 100,
+            }}
           >
             <motion.div
               className="forge-content"
@@ -1175,24 +2054,128 @@ const Merchant = ({ gameData, onComplete, playSound }) => {
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: 50, opacity: 0 }}
               transition={{ duration: 0.3 }}
+              style={{
+                backgroundColor: "#16213e",
+                borderRadius: "8px",
+                padding: "20px",
+                width: "100%",
+                maxWidth: "600px",
+                boxShadow: "0 10px 25px rgba(0, 0, 0, 0.5)",
+              }}
             >
-              <h3>Weapon Forge</h3>
+              <h3
+                style={{
+                  textAlign: "center",
+                  margin: "0 0 20px 0",
+                  color: "#f0c75e",
+                  fontSize: "24px",
+                }}
+              >
+                Weapon Forge
+              </h3>
 
-              <div className="forge-image">
-                <img src={forgeImg} alt="Forge" className="forge-img" />
-                <div className="forge-effects"></div>
+              <div
+                className="forge-image"
+                style={{
+                  margin: "20px auto",
+                  width: "200px",
+                  height: "120px",
+                  position: "relative",
+                  backgroundColor: "rgba(255, 102, 0, 0.2)",
+                  borderRadius: "8px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <div className="forge-img" style={{ fontSize: "40px" }}>
+                  🔥
+                </div>
+                <div
+                  className="forge-effects"
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background:
+                      "radial-gradient(circle, rgba(255,102,0,0.2) 0%, rgba(255,102,0,0) 70%)",
+                    animation: "pulse 2s infinite",
+                  }}
+                ></div>
               </div>
 
-              <div className="upgrade-details">
-                <div className="current-weapon">
-                  <h4>Current Weapon</h4>
-                  <div className={`weapon-display ${forgeUpgrade.from}`}>
-                    <div className="weapon-icon">
+              <div
+                className="upgrade-details"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  margin: "30px 0",
+                  gap: "20px",
+                }}
+              >
+                <div
+                  className="current-weapon"
+                  style={{
+                    flex: 1,
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                  }}
+                >
+                  <h4 style={{ margin: "0 0 10px 0", color: "#b8b8c0" }}>
+                    Current Weapon
+                  </h4>
+                  <div
+                    className={`weapon-display ${forgeUpgrade.from}`}
+                    style={{
+                      backgroundColor: "rgba(42, 58, 90, 0.8)",
+                      padding: "15px",
+                      borderRadius: "6px",
+                      width: "100%",
+                      color:
+                        forgeUpgrade.from === "legendary"
+                          ? "#ffaa33"
+                          : forgeUpgrade.from === "epic"
+                          ? "#bb55ff"
+                          : forgeUpgrade.from === "rare"
+                          ? "#55aaff"
+                          : "#ffffff",
+                    }}
+                  >
+                    <div
+                      className="weapon-icon"
+                      style={{
+                        fontSize: "26px",
+                        textAlign: "center",
+                        marginBottom: "10px",
+                      }}
+                    >
                       {forgeHero.weapon.icon || "⚔️"}
                     </div>
-                    <div className="weapon-info">
-                      <div className="weapon-name">{forgeHero.weapon.name}</div>
-                      <div className="weapon-rarity">
+                    <div
+                      className="weapon-info"
+                      style={{ textAlign: "center" }}
+                    >
+                      <div
+                        className="weapon-name"
+                        style={{
+                          fontWeight: "bold",
+                          marginBottom: "5px",
+                        }}
+                      >
+                        {forgeHero.weapon.name}
+                      </div>
+                      <div
+                        className="weapon-rarity"
+                        style={{
+                          fontSize: "12px",
+                          textTransform: "uppercase",
+                          letterSpacing: "1px",
+                        }}
+                      >
                         {forgeUpgrade.from.toUpperCase()}
                       </div>
                     </div>
@@ -1201,6 +2184,9 @@ const Merchant = ({ gameData, onComplete, playSound }) => {
                         className="weapon-enchant"
                         style={{
                           color: ENCHANTMENTS[forgeHero.weapon.enchant]?.color,
+                          textAlign: "center",
+                          marginTop: "10px",
+                          fontSize: "24px",
                         }}
                       >
                         {ENCHANTMENTS[forgeHero.weapon.enchant]?.icon}
@@ -1209,19 +2195,85 @@ const Merchant = ({ gameData, onComplete, playSound }) => {
                   </div>
                 </div>
 
-                <div className="upgrade-arrow">⟶</div>
+                <div
+                  className="upgrade-arrow"
+                  style={{
+                    fontSize: "30px",
+                    color: "#f0c75e",
+                  }}
+                >
+                  ⟶
+                </div>
 
-                <div className="upgraded-weapon">
-                  <h4>After Upgrade</h4>
-                  <div className={`weapon-display ${forgeUpgrade.to}`}>
-                    <div className="weapon-icon">⚔️</div>
-                    <div className="weapon-info">
-                      <div className="weapon-name">
-                        {forgeUpgrade.to.charAt(0).toUpperCase() +
-                          forgeUpgrade.to.slice(1)}{" "}
-                        Weapon
+                <div
+                  className="upgraded-weapon"
+                  style={{
+                    flex: 1,
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                  }}
+                >
+                  <h4 style={{ margin: "0 0 10px 0", color: "#b8b8c0" }}>
+                    After Upgrade
+                  </h4>
+                  <div
+                    className={`weapon-display ${forgeUpgrade.to}`}
+                    style={{
+                      backgroundColor: "rgba(42, 58, 90, 0.8)",
+                      padding: "15px",
+                      borderRadius: "6px",
+                      width: "100%",
+                      color:
+                        forgeUpgrade.to === "legendary"
+                          ? "#ffaa33"
+                          : forgeUpgrade.to === "epic"
+                          ? "#bb55ff"
+                          : forgeUpgrade.to === "rare"
+                          ? "#55aaff"
+                          : "#ffffff",
+                      border: `1px dashed ${
+                        forgeUpgrade.to === "legendary"
+                          ? "#ffaa33"
+                          : forgeUpgrade.to === "epic"
+                          ? "#bb55ff"
+                          : forgeUpgrade.to === "rare"
+                          ? "#55aaff"
+                          : "#ffffff"
+                      }`,
+                    }}
+                  >
+                    <div
+                      className="weapon-icon"
+                      style={{
+                        fontSize: "26px",
+                        textAlign: "center",
+                        marginBottom: "10px",
+                      }}
+                    >
+                      {getWeaponIcon(forgeUpgrade.to)}
+                    </div>
+                    <div
+                      className="weapon-info"
+                      style={{ textAlign: "center" }}
+                    >
+                      <div
+                        className="weapon-name"
+                        style={{
+                          fontWeight: "bold",
+                          marginBottom: "5px",
+                        }}
+                      >
+                        {getNewWeaponName(forgeHero.class, forgeUpgrade.to)}
                       </div>
-                      <div className="weapon-rarity">
+                      <div
+                        className="weapon-rarity"
+                        style={{
+                          fontSize: "12px",
+                          textTransform: "uppercase",
+                          letterSpacing: "1px",
+                        }}
+                      >
                         {forgeUpgrade.to.toUpperCase()}
                       </div>
                     </div>
@@ -1230,6 +2282,9 @@ const Merchant = ({ gameData, onComplete, playSound }) => {
                         className="weapon-enchant"
                         style={{
                           color: ENCHANTMENTS[forgeHero.weapon.enchant]?.color,
+                          textAlign: "center",
+                          marginTop: "10px",
+                          fontSize: "24px",
                         }}
                       >
                         {ENCHANTMENTS[forgeHero.weapon.enchant]?.icon}
@@ -1239,32 +2294,84 @@ const Merchant = ({ gameData, onComplete, playSound }) => {
                 </div>
               </div>
 
-              <div className="forge-price">
-                <p>Upgrade Cost:</p>
-                <div className="price-display">
-                  <img src={goldCoinImg} alt="Gold" className="gold-icon-img" />
+              <div
+                className="forge-price"
+                style={{
+                  textAlign: "center",
+                  margin: "20px 0",
+                  padding: "10px",
+                  backgroundColor: "rgba(240, 199, 94, 0.1)",
+                  borderRadius: "6px",
+                }}
+              >
+                <p style={{ margin: "0 0 10px 0", color: "#b8b8c0" }}>
+                  Upgrade Cost:
+                </p>
+                <div
+                  className="price-display"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "10px",
+                    fontSize: "24px",
+                    fontWeight: "bold",
+                    color: "#f0c75e",
+                  }}
+                >
+                  <span className="gold-icon">💰</span>
                   <span className="price-amount">{forgeUpgrade.price}</span>
                 </div>
               </div>
 
-              <div className="forge-buttons">
-                <motion.button
+              <div
+                className="forge-buttons"
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  gap: "15px",
+                  marginTop: "20px",
+                }}
+              >
+                <button
                   className="cancel-button"
                   onClick={cancelForgeUpgrade}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                  style={{
+                    flex: 1,
+                    padding: "12px",
+                    backgroundColor: "rgba(255, 85, 85, 0.2)",
+                    color: "#ff5555",
+                    border: "1px solid #ff5555",
+                    borderRadius: "6px",
+                    cursor: "pointer",
+                    fontSize: "16px",
+                    transition: "all 0.2s",
+                  }}
                 >
                   Cancel
-                </motion.button>
-                <motion.button
+                </button>
+                <button
                   className="confirm-button"
                   onClick={completeForgeUpgrade}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
                   disabled={gold < forgeUpgrade.price}
+                  style={{
+                    flex: 1,
+                    padding: "12px",
+                    backgroundColor:
+                      gold < forgeUpgrade.price ? "#666" : "#f0c75e",
+                    color: "#16213e",
+                    border: "none",
+                    borderRadius: "6px",
+                    fontWeight: "bold",
+                    cursor:
+                      gold < forgeUpgrade.price ? "not-allowed" : "pointer",
+                    fontSize: "16px",
+                    transition: "all 0.2s",
+                    opacity: gold < forgeUpgrade.price ? 0.7 : 1,
+                  }}
                 >
                   Forge Upgrade
-                </motion.button>
+                </button>
               </div>
             </motion.div>
           </motion.div>
@@ -1276,23 +2383,91 @@ const Merchant = ({ gameData, onComplete, playSound }) => {
         <div
           className="item-tooltip"
           style={{
+            position: "absolute",
             top: `${showItemDetail.tooltipY || "50%"}`,
             left: `${showItemDetail.tooltipX || "50%"}`,
+            backgroundColor: "rgba(22, 33, 62, 0.95)",
+            padding: "12px",
+            borderRadius: "6px",
+            boxShadow: "0 4px 15px rgba(0, 0, 0, 0.5)",
+            zIndex: 50,
+            maxWidth: "300px",
+            border: "1px solid #2a3a5a",
           }}
         >
-          <div className="tooltip-header">
-            <div className="tooltip-icon">{showItemDetail.icon}</div>
-            <div className="tooltip-title">{showItemDetail.name}</div>
+          <div
+            className="tooltip-header"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+              marginBottom: "8px",
+            }}
+          >
+            <div className="tooltip-icon" style={{ fontSize: "24px" }}>
+              {showItemDetail.icon}
+            </div>
+            <div
+              className="tooltip-title"
+              style={{
+                fontWeight: "bold",
+                fontSize: "16px",
+              }}
+            >
+              {showItemDetail.name}
+            </div>
           </div>
-          <div className="tooltip-description">
+          <div
+            className="tooltip-description"
+            style={{
+              fontSize: "14px",
+              color: "#b8b8c0",
+              marginBottom: "10px",
+              lineHeight: "1.4",
+            }}
+          >
             {showItemDetail.description}
           </div>
-          <div className="tooltip-price">
-            <span className="price-label">Price:</span>
-            <img src={goldCoinImg} alt="Gold" className="small-gold-icon" />
-            <span className="price-value">{showItemDetail.price}</span>
+          <div
+            className="tooltip-price"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              marginBottom: "8px",
+            }}
+          >
+            <span
+              className="price-label"
+              style={{ fontSize: "12px", color: "#8888a0" }}
+            >
+              Price:
+            </span>
+            <span className="gold-icon" style={{ color: "#f0c75e" }}>
+              💰
+            </span>
+            <span
+              className="price-value"
+              style={{
+                fontWeight: "bold",
+                color: gold >= showItemDetail.price ? "#f0c75e" : "#ff5555",
+              }}
+            >
+              {showItemDetail.price}
+            </span>
           </div>
-          <div className="tooltip-action">
+          <div
+            className="tooltip-action"
+            style={{
+              backgroundColor: "#2a3a5a",
+              color: "#f0c75e",
+              padding: "5px 10px",
+              borderRadius: "4px",
+              fontSize: "12px",
+              textAlign: "center",
+              fontWeight: "bold",
+            }}
+          >
             {getItemActionLabel(showItemDetail)}
           </div>
         </div>
@@ -1300,9 +2475,40 @@ const Merchant = ({ gameData, onComplete, playSound }) => {
 
       {/* Purchase effect animation */}
       {purchaseEffect && (
-        <div className={`purchase-effect ${purchaseEffect.type}`}>
-          <div className="effect-content">
-            <div className="effect-icon">
+        <div
+          className={`purchase-effect ${purchaseEffect.type}`}
+          style={{
+            position: "fixed",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            backgroundColor:
+              purchaseEffect.type === "health"
+                ? "rgba(85, 255, 127, 0.8)"
+                : purchaseEffect.type === "weapon"
+                ? "rgba(255, 170, 51, 0.8)"
+                : purchaseEffect.type === "enchant"
+                ? "rgba(187, 85, 255, 0.8)"
+                : purchaseEffect.type === "forge"
+                ? "rgba(255, 102, 0, 0.8)"
+                : "rgba(85, 170, 255, 0.8)",
+            color: "#16213e",
+            padding: "15px 25px",
+            borderRadius: "8px",
+            zIndex: 200,
+            boxShadow: "0 0 30px rgba(255, 255, 255, 0.5)",
+            animation: "fadeInOut 2s forwards",
+          }}
+        >
+          <div
+            className="effect-content"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "15px",
+            }}
+          >
+            <div className="effect-icon" style={{ fontSize: "30px" }}>
               {purchaseEffect.type === "health"
                 ? "❤️"
                 : purchaseEffect.type === "weapon"
@@ -1313,12 +2519,25 @@ const Merchant = ({ gameData, onComplete, playSound }) => {
                 ? "🔨"
                 : "📦"}
             </div>
-            <div className="effect-message">
+            <div
+              className="effect-message"
+              style={{
+                fontWeight: "bold",
+                fontSize: "18px",
+              }}
+            >
               {purchaseEffect.name}
               {purchaseEffect.target && (
-                <span className="effect-target">
-                  {" "}
-                  → {purchaseEffect.target}
+                <span
+                  className="effect-target"
+                  style={{
+                    fontSize: "14px",
+                    opacity: 0.8,
+                    display: "block",
+                  }}
+                >
+                  {" → "}
+                  {purchaseEffect.target}
                 </span>
               )}
             </div>
@@ -1329,6 +2548,22 @@ const Merchant = ({ gameData, onComplete, playSound }) => {
       {/* Tooltips */}
       <Tooltip id="weapon-tooltip" />
       <Tooltip id="inventory-tooltip" />
+
+      {/* CSS for animations */}
+      <style>{`
+        @keyframes pulse {
+          0% { opacity: 0.4; }
+          50% { opacity: 0.8; }
+          100% { opacity: 0.4; }
+        }
+        
+        @keyframes fadeInOut {
+          0% { opacity: 0; transform: translate(-50%, -70%); }
+          20% { opacity: 1; transform: translate(-50%, -50%); }
+          80% { opacity: 1; transform: translate(-50%, -50%); }
+          100% { opacity: 0; transform: translate(-50%, -30%); }
+        }
+      `}</style>
     </div>
   );
 };
